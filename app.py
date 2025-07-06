@@ -15,15 +15,14 @@ st.markdown("""
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     }
 
-    /* Main Title */
-    .st-emotion-cache-10trblm {
+    /* Headers & Important Text (e.g., bolded) */
+    h1, h2, h3, h4, h5, h6, strong {
         color: #FF6A17; /* Hostelworld Orange */
-        text-align: center;
     }
-
-    /* Headers */
-    h1, h2, h3, h4, h5, h6 {
-        color: #FF6A17; /* Hostelworld Orange */
+    
+    /* Center the main title */
+    .st-emotion-cache-10trblm {
+        text-align: center;
     }
 
     /* Buttons */
@@ -149,7 +148,7 @@ if uploaded_file:
         for col in ["Value For Money", "Security", "Location", "Staff",
                     "Atmosphere", "Cleanliness", "Facilities"]:
             avg = current_reviews_df[col].mean() if not current_reviews_df.empty else 0.0
-            st.write(f"{col}: {avg:.2f} / 10.00")
+            st.write(f"**{col}:** {avg:.2f} / 10.00")
 
         # ---- TARGET & EXPECTED ----
         st.header("🎯 Forecast Inputs")
@@ -185,11 +184,11 @@ if uploaded_file:
         )
 
         st.header("📈 Forecast Results")
-        st.write(f"📉 If you add no new reviews, your rolling average may drop to: {new_avg_if_none:.2f} / 10.00")
+        st.write(f"📉 If you add no new reviews, your rolling average may drop to: **{new_avg_if_none:.2f} / 10.00**")
         if new_reviews_needed > 0:
             st.write(
-                f"⭐️ To reach {target_avg:.2f}, you’d need about {new_reviews_needed:.0f} new reviews "
-                f"averaging {expected_new_avg:.2f} / 10.00."
+                f"⭐️ To reach **{target_avg:.2f}**, you’d need about **{new_reviews_needed:.0f}** new reviews "
+                f"averaging **{expected_new_avg:.2f} / 10.00**."
             )
         else:
             st.write("⚠️ Your expected average must be higher than your target for this to work realistically.")
