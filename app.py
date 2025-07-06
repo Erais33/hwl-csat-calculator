@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-# ---- PAGE STYLE ----
+# ---- STYLE ----
 st.markdown(
     """
     <style>
@@ -17,17 +17,19 @@ st.markdown(
 
     input, .stDateInput input {
         background-color: #FFFFFF !important;
-        color: #000000;
+        color: #000000 !important;
     }
 
     .stNumberInput>div>div>input {
         background-color: #FFFFFF !important;
-        color: #000000;
+        color: #000000 !important;
     }
 
     div[data-testid="stAlert-success"], 
-    div[data-testid="stAlert-info"] {
-        color: #000000;
+    div[data-testid="stAlert-info"], 
+    div[data-testid="stAlert-warning"] {
+        background-color: #FFFFFF !important;
+        color: #000000 !important;
     }
     </style>
     """,
@@ -78,8 +80,8 @@ if uploaded_file:
         dropping_count = len(dropping_df)
 
         st.header("📊 Current & Dropping Reviews")
-        st.success(f"✅ Staying reviews: {current_count} | Avg: {current_avg:.2f} / 10.00")
-        st.info(f"🔻 Dropping reviews: {dropping_count} | Avg: {dropping_avg:.2f} / 10.00")
+        st.write(f"✅ Staying reviews: {current_count} | Avg: {current_avg:.2f} / 10.00")
+        st.write(f"🔻 Dropping reviews: {dropping_count} | Avg: {dropping_avg:.2f} / 10.00")
 
         # ---- Subcategory Averages ----
         st.header("🔍 Subcategory Averages")
@@ -131,20 +133,20 @@ if uploaded_file:
         needed_reviews = max(0, needed_reviews)
 
         st.header("📈 Forecast")
-        st.success(f"📉 If you add no new reviews, your rolling average would drop to: **{no_new_avg:.2f} / 10.00**")
+        st.write(f"📉 If you add no new reviews, your rolling average would drop to: **{no_new_avg:.2f} / 10.00**")
         if needed_reviews > 0:
-            st.info(
+            st.write(
                 f"⭐️ To reach **{target_avg:.2f}**, you’d need about **{needed_reviews:.0f}** "
                 f"new reviews averaging **{expected_new_avg:.2f} / 10.00**."
             )
         else:
-            st.info("⚠️ Your expected average must be higher than your target to calculate realistically.")
+            st.write("⚠️ Your expected average must be higher than your target to calculate realistically.")
 
     except Exception as e:
         st.error(f"❌ CSV Error: {e}")
 
 else:
-    st.warning("📂 Please upload your Hostelworld CSV to start.")
+    st.write("📂 Please upload your Hostelworld CSV to start.")
 
 st.markdown(
     """
