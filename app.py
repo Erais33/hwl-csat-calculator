@@ -1,91 +1,98 @@
 import streamlit as st
 import pandas as pd
-from collections import Counter
-import datetime
 
 # --- Page setup ---
-st.set_page_config(page_title="Hostelworld CSAT Forecast", layout="wide")
-st.title("🏨 Hostelworld 6-Month Rolling CSAT Forecast Calculator")
+st.set_page_config(page_title="Hostelworld Rolling CSAT Forecast", layout="centered")
 
-# --- File uploader ---
+# --- Custom CSS ---
+st.markdown("""
+    <style>
+        body {
+            background-color: #f5f5f5;
+        }
+        .main {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 2rem;
+            color: #222222;
+        }
+        h1, h2, h3 {
+            color: #0d47a1;
+        }
+        .stButton>button {
+            background-color: #0d47a1;
+            color: white;
+        }
+        .stNumberInput>div>input {
+            background-color: #ffffff;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- Title ---
+st.markdown('<div class="main">', unsafe_allow_html=True)
+st.title("🏨 Hostelworld CSAT Rolling Average Forecast")
+
+# --- Upload CSV ---
 uploaded_file = st.file_uploader("📂 Upload your Hostelworld CSV file (raw export)", type=['csv'])
 
 if uploaded_file:
     try:
         df = pd.read_csv(
             uploaded_file,
-            engine='python',  # More robust for messy CSVs
-            on_bad_lines='warn'  # Warn about malformed lines but keep going
+            engine='python',
+            on_bad_lines='skip'
         )
-        st.success(f"✅ Loaded {len(df)} rows")
+        st.success(f"✅ Loaded {len(df)} rows from file")
     except Exception as e:
-        st.error(f"❌ CSV read failed: {e}")
+        st.error(f"❌ Error reading CSV: {e}")
         st.stop()
 
-    # --- Basic checks ---
-    st.write("📋 Columns found:", df.columns.tolist())
+    # --- Check for needed columns ---
     if "Ratings" not in df.columns:
-        st.error("❌ Missing 'Ratings' column — please check your export.")
+        st.error("❌ 'Ratings' column not found in your CSV.")
         st.stop()
 
-    # --- Rolling average ---
+    # --- Calculate current rolling average ---
     ratings = pd.to_numeric(df["Ratings"], errors='coerce').dropna()
-    current_avg = ratings.mean()
     num_reviews = len(ratings)
+    current_avg = ratings.mean()
 
-    st.header("Current Rolling Average")
-    st.write(f"⭐️ Current 6-month average rating: **{current_avg:.2f}** from {num_reviews} reviews")
+    st.header("⭐️ Current Rolling Average")
+    st.write(f"Current rolling average: **{current_avg:.2f}** based on **{num_reviews}** reviews")
 
-    # --- Forecast inputs ---
-    st.subheader("📈 Forecast next month")
+    # --- Forecast if no new reviews ---
+    rolling_drop = (ratings.sum()) / (num_reviews + 1)
+    st.info(f"📉 If you add no new reviews, your rolling average will drop to: **{rolling_drop:.2f}**")
+
+    # --- Target input ---
+    st.subheader("🎯 Forecast to Reach a Target Score")
     target_avg = st.number_input(
-        "🎯 Target rolling average you want to reach",
-        min_value=0.0, max_value=10.0, step=0.1
+        "Enter your target rolling average",
+        min_value=0.0, max_value=10.0, step=0.1, value=round(current_avg + 0.2, 1)
     )
 
     if target_avg > 0:
-        # Calculate needed sum
         total_current_score = ratings.sum()
-        needed_total_score = target_avg * (num_reviews + 1)
 
-        needed_new_total_score = target_avg * (num_reviews + 1) - total_current_score
+        needed_total = target_avg * (num_reviews + 1)
+        needed_new_total = needed_total - total_current_score
 
-        # How many new reviews needed if they get your desired new review average
-        new_review_avg = st.number_input(
-            "Expected average score for your new reviews",
-            min_value=0.0, max_value=10.0, step=0.1, value=9.5
-        )
+        if needed_new_total > 0:
+            needed_reviews = needed_new_total / 10.0
+            needed_reviews = int(needed_reviews) + 1 if needed_reviews % 1 > 0 else int(needed_reviews)
+            needed_avg = needed_new_total / needed_reviews
+            needed_avg = min(needed_avg, 10.0)
 
-        if new_review_avg > 0:
-            needed_reviews = (target_avg * (num_reviews + 1) - total_current_score) / new_review_avg
-            needed_reviews = max(0, needed_reviews)
-            st.write(f"➡️ To reach **{target_avg:.2f}**, you’d need about **{needed_reviews:.0f}** new reviews averaging **{new_review_avg:.2f}**")
-
-        # No new reviews forecast
-        rolling_drop = (total_current_score) / (num_reviews + 1)
-        st.info(f"📉 If you add no new reviews, your rolling average will drop to ~**{rolling_drop:.2f}**")
-
-    # --- Sub-category averages ---
-    st.subheader("🔍 Sub-Category Averages")
-
-    for cat in ["Value For Money", "Security", "Location", "Staff", "Atmosphere", "Cleanliness", "Facilities"]:
-        if cat in df.columns:
-            cat_ratings = pd.to_numeric(df[cat], errors='coerce').dropna()
-            st.write(f"**{cat}**: {cat_ratings.mean():.2f}")
-
-    # --- Basic comment summary ---
-    if "Comment" in df.columns:
-        comments = df["Comment"].dropna().astype(str).tolist()
-        words = " ".join(comments).lower().split()
-        word_counts = Counter(words)
-        common_words = word_counts.most_common(15)
-        st.subheader("💬 Comment Trends (simple word frequency)")
-        for word, count in common_words:
-            st.write(f"{word}: {count}")
-    else:
-        st.info("No 'Comment' column found.")
+            st.success(
+                f"✅ To reach **{target_avg:.2f}**, you need about **{needed_reviews} new reviews** "
+                f"averaging **{needed_avg:.2f} / 10.0**."
+            )
+        else:
+            st.success("✅ You’ve already reached your target!")
 
 else:
-    st.info("⬆️ Upload a raw Hostelworld CSV export to get started.")
+    st.info("⬆️ Upload your CSV file above to get started.")
 
 st.caption("Made by Erwan Decotte")
+st.markdown('</div>', unsafe_allow_html=True)
