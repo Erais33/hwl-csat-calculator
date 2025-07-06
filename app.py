@@ -36,15 +36,17 @@ st.markdown(
     div[data-testid="stAlert"] {
         border-radius: 8px !important;
         padding: 1em !important;
+        color: #000000 !important;
     }
 
     div[data-testid="stAlert-success"] {
         background-color: #E6F4EA !important;
-        color: #000000 !important;
     }
     div[data-testid="stAlert-info"] {
         background-color: #E7F2FA !important;
-        color: #000000 !important;
+    }
+    div[data-testid="stAlert-warning"] {
+        background-color: #FFF4E5 !important;
     }
     </style>
     """,
@@ -60,12 +62,13 @@ st.title("St Christopher's Inns • Rolling Average Forecast")
 st.header("📖 What is the Target Rolling Average?")
 st.markdown(
     """
-    Your rolling average is your average guest score over the last 6 months.
-    The **Target Rolling Average** is the score you want to reach for next month.
+    The **Target Rolling Average** is the score you want your hostel’s last 6-month guest rating to reach.
     
     This tool shows:
-    - 📉 If you add **no new reviews**, what your average may drop to.
-    - ⭐️ If you want to hit your target, how many new reviews you’d need, and what average they must reach.
+    - 📉 If you add **no new reviews**, what your rolling average may drop to next month.
+    - ⭐️ If you want to hit your target, how many new reviews you’d need and what average they must score.
+
+    Use this to plan improvements & forecast realistic scores!
     """
 )
 
@@ -79,18 +82,18 @@ if uploaded_file:
             uploaded_file,
             usecols=[
                 "Date", "Nationality", "Age",
-                "Value For Money", "Security", "Location", "Staff",
-                "Atmosphere", "Cleanliness", "Facilities", "Ratings"
+                "Value For Money", "Security", "Location",
+                "Staff", "Atmosphere", "Cleanliness", "Facilities", "Ratings"
             ],
             parse_dates=["Date"],
             dayfirst=True,
-            engine='python',  # more robust
+            engine='python',
             on_bad_lines='warn'
         )
 
         st.success(f"✅ File uploaded! Total rows read: {len(df)}")
 
-        # Coerce scores to numbers
+        # Convert score columns to numeric safely
         score_cols = [
             "Value For Money", "Security", "Location",
             "Staff", "Atmosphere", "Cleanliness", "Facilities", "Ratings"
@@ -99,10 +102,9 @@ if uploaded_file:
             df[col] = pd.to_numeric(df[col], errors='coerce')
 
         df = df.dropna(subset=["Date", "Ratings"])
-
         st.write(f"Valid reviews after cleaning: {len(df)}")
 
-        # ---- DATE PICKER ----
+        # ---- DATE ----
         st.header("📅 Forecast Date")
         cutoff_date = st.date_input("Forecast for date:", datetime.today().date())
         six_months_ago = pd.to_datetime(cutoff_date) - pd.DateOffset(months=6)
@@ -120,9 +122,9 @@ if uploaded_file:
         st.success(f"✅ Staying reviews: {current_count} | Avg: {current_avg:.2f} / 10.00")
         st.info(f"🔻 Dropping reviews: {dropped_count} | Avg: {dropped_avg:.2f} / 10.00")
 
-        # ---- SUB-CATEGORIES ----
+        # ---- SUB-CATEGORY AVERAGES ----
         st.header("📊 Sub-category Averages (Last 6 Months)")
-        for col in score_cols[:-1]:  # exclude Ratings
+        for col in score_cols[:-1]:  # Exclude Ratings
             avg = current_reviews[col].mean()
             st.write(f"**{col}**: {avg:.2f} / 10.00")
 
@@ -137,10 +139,10 @@ if uploaded_file:
             value=9.20, min_value=0.1, max_value=10.0, step=0.1, format="%.2f"
         )
 
-        # ---- CALCULATION ----
         total_current = current_avg * current_count
         total_drop = dropped_avg * dropped_count
         rolling_total_after_drop = total_current - total_drop
+
         base_reviews_remaining = current_count - dropped_count
         if base_reviews_remaining < 0:
             base_reviews_remaining = 0
