@@ -8,12 +8,12 @@ st.set_page_config(
     layout="centered"
 )
 
-# 🎨 Custom CSS styling for St Christopher's Inns colors
+# ✅ Better styling: visible text on white background
 st.markdown("""
     <style>
     body {
         background-color: #ffffff;
-        color: #333333;
+        color: #003366;
     }
     .stApp {
         background-color: #ffffff;
@@ -22,11 +22,11 @@ st.markdown("""
         padding-top: 2rem;
     }
     h1, h2, h3 {
-        color: #003366; /* Dark navy blue */
+        color: #003366;
     }
     .stAlert, .stSuccess, .stWarning, .stInfo {
         border-left: 5px solid #003366;
-        background-color: #f0f8ff; /* Light blue */
+        background-color: #f2f2f2; /* Soft grey for contrast */
         color: #003366;
     }
     .stButton>button {
@@ -34,7 +34,8 @@ st.markdown("""
         color: #ffffff;
     }
     .stNumberInput>div>input {
-        background-color: #f0f8ff;
+        background-color: #ffffff;
+        color: #003366;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -44,15 +45,16 @@ st.title("🏨 St Christopher's Inns • Rolling Average Forecast")
 
 # 📖 Info block: explanation
 st.info("""
-**What is the Target Rolling Average?**
+### 📌 What is the Target Rolling Average?
 
 Your rolling average is your average guest score over the last 6 months.
-The **Target Rolling Average** is the score you'd like to reach for next month.
+The **Target Rolling Average** is the score you'd like to reach next month.
 
 This tool shows:
-- If you add no new reviews, what your average may drop to.
-- If you want to hit your target, how many reviews you’d need and what average those reviews must achieve.
-Use this to plan improvements in guest experience and track your goals.
+- If you add **no new reviews**, what your average might drop to.
+- If you want to reach your target, how many reviews you’d need and what average those reviews must achieve.
+
+Use this to plan improvements, staff training, or marketing campaigns.
 """)
 
 # 📂 File uploader
@@ -72,7 +74,6 @@ if uploaded_file:
 
         target_avg = st.number_input("🎯 Enter your Target Rolling Average", min_value=0.0, max_value=10.0, value=8.5, step=0.1)
 
-        # 🔄 Rolling window calculation
         today = datetime.today()
         six_months_ago = today - pd.DateOffset(months=6)
 
