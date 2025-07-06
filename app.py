@@ -2,113 +2,181 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-# 🎨 Page config
-st.set_page_config(
-    page_title="St Christopher's Inns • Rolling Average Tool",
-    layout="centered"
-)
-
-# ✅ Better styling: visible text on white background
-st.markdown("""
+# ---- BRAND STYLE ----
+st.markdown(
+    """
     <style>
-    body {
-        background-color: #ffffff;
-        color: #003366;
+    html, body, .stApp {
+        background-color: #F5F7FA;
+        color: #002F4B;
     }
-    .stApp {
-        background-color: #ffffff;
-    }
+
     .block-container {
-        padding-top: 2rem;
+        background-color: #FFFFFF;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
-    h1, h2, h3 {
-        color: #003366;
+
+    input, .stDateInput input {
+        background-color: #FFFFFF !important;
+        color: #002F4B !important;
+        border: 1px solid #002F4B !important;
     }
-    .stAlert, .stSuccess, .stWarning, .stInfo {
-        border-left: 5px solid #003366;
-        background-color: #f2f2f2; /* Soft grey for contrast */
-        color: #003366;
+
+    .stNumberInput>div>div>input {
+        background-color: #FFFFFF !important;
+        color: #002F4B !important;
     }
+
     .stButton>button {
-        background-color: #003366;
-        color: #ffffff;
+        background-color: #F58220 !important;
+        color: #FFFFFF !important;
     }
-    .stNumberInput>div>input {
-        background-color: #ffffff;
-        color: #003366;
+
+    div[data-testid="stAlert"] {
+        border-radius: 8px !important;
+        padding: 1em !important;
+    }
+
+    div[data-testid="stAlert-success"] {
+        background-color: #E6F4EA !important;
+    }
+    div[data-testid="stAlert-info"] {
+        background-color: #E7F2FA !important;
     }
     </style>
-""", unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True
+)
 
-# 🏨 App title
-st.title("🏨 St Christopher's Inns • Rolling Average Forecast")
+# ---- LOGO ----
+try:
+    st.image("logohwl.png", width=200)
+except:
+    st.image("https://seeklogo.com/images/H/hostelworld-logo-57FDE8F7B1-seeklogo.com.png", width=200)
 
-# 📖 Info block: explanation
-st.info("""
-### 📌 What is the Target Rolling Average?
+st.title("6-Month Rolling CSAT Forecast")
 
-Your rolling average is your average guest score over the last 6 months.
-The **Target Rolling Average** is the score you'd like to reach next month.
+# ---- UPLOAD ----
+st.header("📤 Upload Reviews CSV")
+st.markdown(
+    "Upload a CSV with **Date** and **Ratings** columns. "
+    "Each row should show when the review was posted and its score (0–10)."
+)
 
-This tool shows:
-- If you add **no new reviews**, what your average might drop to.
-- If you want to reach your target, how many reviews you’d need and what average those reviews must achieve.
-
-Use this to plan improvements, staff training, or marketing campaigns.
-""")
-
-# 📂 File uploader
-uploaded_file = st.file_uploader("📂 Upload your Hostelworld CSV file", type=["csv"])
+uploaded_file = st.file_uploader("Upload your CSV file (Date + Ratings)", type=["csv"])
 
 if uploaded_file:
     try:
-        df = pd.read_csv(uploaded_file, on_bad_lines='skip')
-        df['Ratings'] = pd.to_numeric(df['Ratings'], errors='coerce')
-        df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
-        df = df.dropna(subset=['Ratings', 'Date'])
+        df = pd.read_csv(
+            uploaded_file,
+            usecols=["Date", "Ratings"],
+            parse_dates=["Date"],
+            dayfirst=True,
+            on_bad_lines='skip'
+        )
+        st.write(f"✅ File uploaded! Total rows: {len(df)}")
 
-        current_reviews = len(df)
-        current_avg = df['Ratings'].mean()
+        df["Ratings"] = pd.to_numeric(df["Ratings"], errors='coerce')
+        valid_reviews = df.dropna(subset=["Ratings", "Date"])
 
-        st.write(f"✅ Loaded **{current_reviews} reviews** with an average score of **{current_avg:.2f}/10**")
+        st.write(f"Valid reviews: {len(valid_reviews)}")
+        if len(valid_reviews) != len(df):
+            st.warning(f"{len(df) - len(valid_reviews)} rows skipped due to missing or invalid data.")
 
-        target_avg = st.number_input("🎯 Enter your Target Rolling Average", min_value=0.0, max_value=10.0, value=8.5, step=0.1)
+        # ---- DATE ----
+        st.header("📅 Forecast Date")
+        st.markdown(
+            "Pick the forecast date. Reviews older than 6 months will drop off on that date."
+        )
 
-        today = datetime.today()
-        six_months_ago = today - pd.DateOffset(months=6)
+        default_date = datetime.today().date()
+        cutoff_date = st.date_input("Forecast for date:", default_date)
 
-        dropped_reviews = df[df['Date'] < six_months_ago]
-        remaining_reviews = current_reviews - len(dropped_reviews)
-        remaining_sum = df[df['Date'] >= six_months_ago]['Ratings'].sum()
+        six_months_ago = pd.to_datetime(cutoff_date) - pd.DateOffset(months=6)
 
-        if remaining_reviews > 0:
-            next_avg = remaining_sum / remaining_reviews
+        current_reviews_df = valid_reviews[
+            (valid_reviews["Date"] > six_months_ago) & (valid_reviews["Date"] <= pd.to_datetime(cutoff_date))
+        ]
+        dropping_reviews_df = valid_reviews[valid_reviews["Date"] <= six_months_ago]
+
+        current_avg = current_reviews_df["Ratings"].mean() if not current_reviews_df.empty else 0.0
+        current_reviews_count = len(current_reviews_df)
+
+        dropped_reviews_count = len(dropping_reviews_df)
+        dropped_reviews_avg = dropping_reviews_df["Ratings"].mean() if not dropping_reviews_df.empty else 0.0
+
+        st.header("🧾 Summary")
+        st.success(f"✅ **Staying reviews:** {current_reviews_count} | Avg: {current_avg:.2f} / 10.00")
+        st.info(f"🔻 **Dropping reviews:** {dropped_reviews_count} | Avg: {dropped_reviews_avg:.2f} / 10.00")
+
+        # ---- TARGET ----
+        st.header("🎯 Set Your Goal")
+        st.markdown(
+            "Enter the **target rolling average** you want to reach, "
+            "and the **realistic average you expect for your new reviews**. "
+            "The app will calculate how many new reviews you’d need."
+        )
+
+        target_avg = st.number_input(
+            "Target rolling average:",
+            value=9.50, min_value=0.0, max_value=10.0, step=0.1, format="%.2f"
+        )
+
+        expected_new_avg = st.number_input(
+            "Expected average for new reviews:",
+            value=9.20, min_value=0.1, max_value=10.0, step=0.1, format="%.2f"
+        )
+
+        # ---- CALCULATE ----
+        current_total = current_avg * current_reviews_count
+        drop_total = dropped_reviews_avg * dropped_reviews_count
+        rolling_total_after_drop = current_total - drop_total
+
+        base_reviews_remaining = current_reviews_count - dropped_reviews_count
+        if base_reviews_remaining < 0:
+            base_reviews_remaining = 0
+
+        # Solve for how many new reviews needed
+        needed_points_from_new = target_avg * (base_reviews_remaining + 1) - rolling_total_after_drop
+
+        if expected_new_avg > target_avg:
+            new_reviews_needed = needed_points_from_new / (expected_new_avg - target_avg)
+            new_reviews_needed = max(0, new_reviews_needed)
         else:
-            next_avg = 0
+            new_reviews_needed = 0
 
-        st.warning(f"⚠️ If you add no new reviews, your rolling average may drop to: **{next_avg:.2f}/10**")
+        total_score_needed = new_reviews_needed * expected_new_avg
 
-        target_sum = target_avg * (remaining_reviews + 1)
-        needed_sum = target_sum - remaining_sum
+        # Rolling avg if none
+        new_avg_if_none = (
+            rolling_total_after_drop / base_reviews_remaining if base_reviews_remaining > 0 else 0.0
+        )
 
-        if needed_sum <= 0:
-            needed_reviews = 0
-            needed_avg = 0.0
-            st.success("🎉 Congratulations! You're already at or above your target.")
-        else:
-            needed_reviews = max(1, int(round(needed_sum / target_avg)))
-            needed_avg = needed_sum / needed_reviews
-            needed_avg = min(needed_avg, 10)
+        # ---- RESULTS ----
+        st.header("📊 Forecast")
+        st.success(
+            f"📉 If you add no new reviews, your rolling average would drop to: **{new_avg_if_none:.2f} / 10.00**"
+        )
 
-            st.success(
-                f"⭐️ To reach your target average of **{target_avg:.2f}**, "
-                f"you’d need **{needed_reviews} new reviews** with an average score of "
-                f"**{needed_avg:.2f}/10**."
+        if new_reviews_needed > 0:
+            st.info(
+                f"⭐️ To reach **{target_avg:.2f}**, you’d need about **{new_reviews_needed:.0f}** new reviews "
+                f"averaging **{expected_new_avg:.2f} / 10.00**, adding up to **{total_score_needed:.0f} points**."
             )
+        else:
+            st.info("⚠️ Your expected average must be higher than your target to calculate realistically.")
 
     except Exception as e:
-        st.error(f"❌ Error reading file: {e}")
+        st.error(f"❌ Error reading your CSV: {e}")
 else:
-    st.info("📌 Please upload a CSV file to get started.")
+    st.info("📂 Upload your CSV to begin your forecast.")
 
-st.caption("Made by Erwan Decotte • St Christopher's Inns")
+st.markdown(
+    """
+    <br><br>
+    <sub>Made by Erwan Decotte</sub>
+    """,
+    unsafe_allow_html=True
+)
