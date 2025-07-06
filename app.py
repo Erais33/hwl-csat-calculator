@@ -2,113 +2,102 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-# ---- PAGE CONFIG ----
+# Page configuration
 st.set_page_config(page_title="Rolling Average Forecast", layout="centered")
 
-# ---- SIMPLE STYLE: SOFT ORANGE BACKGROUND ----
-import streamlit as st
-
-st.markdown(
-    """
-    <style>
-    /* General Styles */
+# --- HOSTELWORLD BRAND STYLING ---
+st.markdown("""
+<style>
+    /* General App Styling */
     html, body, .stApp {
-        background-color: #1E1E1E;  /* Dark background for a modern look */
-        color: #F5F5F5;             /* Soft white text for high contrast */
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Professional font */
+        background-color: #1F1F1F !important; /* Dark background */
+        color: #F5F5F5; /* Off-white text for readability */
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     }
 
-    /* Main content area */
-    .block-container {
-        background-color: #2E2E2E;  /* Slightly lighter dark shade for content */
-        border-radius: 10px;        /* Rounded corners for a softer feel */
-        padding: 2rem;
-        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+    /* Main Title */
+    .st-emotion-cache-10trblm {
+        color: #FF6A17; /* Hostelworld Orange */
+        text-align: center;
     }
 
-    /* Headings and Text */
+    /* Headers */
     h1, h2, h3, h4, h5, h6 {
-        color: #FFFFFF;             /* Pure white for prominent headings */
-    }
-
-    p, div, span, label {
-        color: #F5F5F5 !important;   /* Ensures all text is consistently styled */
-    }
-
-    /* Input Widgets */
-    input, .stDateInput input, .stTimeInput input {
-        background-color: #3C3C3C !important; /* Darker input fields */
-        color: #F5F5F5 !important;
-        border: 1px solid #555555 !important; /* Subtle border */
-        border-radius: 5px;         /* Rounded corners for inputs */
-    }
-    
-    .stNumberInput > div > div > input {
-        background-color: #3C3C3C !important;
-        color: #F5F5F5 !important;
-    }
-
-    /* File Uploader */
-    .stFileUploader {
-        border: 2px dashed #007BFF;  /* Dashed blue border to attract attention */
-        background-color: #2E2E2E;
-        border-radius: 10px;
-        padding: 1rem;
-    }
-
-    .stFileUploader label {
-        color: #007BFF !important;   /* Blue text to match the border */
-        font-weight: bold;
+        color: #FF6A17; /* Hostelworld Orange */
     }
 
     /* Buttons */
     .stButton > button {
-        background-color: #007BFF !important; /* Vibrant blue for primary actions */
-        color: #FFFFFF !important;
-        border-radius: 5px;
-        border: none;
-        padding: 0.75rem 1.5rem;
+        background-color: #FF6A17; /* Hostelworld Orange */
+        color: #FFFFFF;
+        border-radius: 20px;
+        border: 1px solid #FF6A17;
         font-weight: bold;
-        transition: background-color 0.3s ease; /* Smooth hover effect */
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+    }
+    .stButton > button:hover {
+        background-color: #FFFFFF;
+        color: #FF6A17;
+        border: 1px solid #FF6A17;
+    }
+
+    /* Input Widgets */
+    .stTextInput > div > div > input,
+    .stDateInput > div > div > input,
+    .stNumberInput > div > div > input {
+        background-color: #333333;
+        color: #F5F5F5;
+        border-radius: 8px;
+        border: 1px solid #555555;
+    }
+
+    /* File Uploader */
+    .stFileUploader {
+        border: 2px dashed #FF6A17;
+        background-color: #333333;
+        border-radius: 10px;
+        padding: 1.5rem;
+        text-align: center;
+    }
+    .stFileUploader label {
+        color: #FF6A17;
+        font-weight: bold;
+    }
+
+    /* Success and Info Boxes */
+    .stAlert {
+        border-radius: 8px;
+    }
+    div[data-testid="stSuccess"] {
+        background-color: rgba(0, 128, 0, 0.1);
+        color: #90EE90;
+    }
+    div[data-testid="stInfo"] {
+        background-color: rgba(255, 106, 23, 0.1);
+        color: #FF6A17;
     }
     
-    .stButton > button:hover {
-        background-color: #0056b3 !important; /* Darker blue on hover */
+    /* Horizontal Separator */
+    hr {
+        border-top: 1px solid #FF6A17;
+    }
+    
+    /* Caption */
+    .st-emotion-cache-1b0udgb {
+        color: #AAAAAA;
+        text-align: center;
     }
 
-    /* Alert and Message Boxes */
-    div[data-testid="stAlert"] {
-        background-color: #3C3C3C !important;
-        color: #F5F5F5 !important;
-        border-left: 5px solid #007BFF !important; /* Blue accent line */
-        border-radius: 5px;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-# Example of how the styled elements will look
-st.title("Modern UI for Streamlit")
-st.write("This is an example of the new, improved styling for your application.")
-
-st.number_input("Enter a number:")
-st.text_input("Enter some text:")
-st.file_uploader("Upload a file to see the new style:")
-st.button("Submit")
-
-st.info("This is an informational message with the new custom styling.")
+</style>
+""", unsafe_allow_html=True)
 
 
-# ---- TITLE ----
 st.title("📊 Rolling Average Forecast")
 
 # ---- UPLOAD ----
 st.header("📤 Upload your Hostelworld CSV")
-uploaded_file = st.file_uploader(
-    "Upload CSV file with Date, Ratings, and subcategory columns",
-    type=["csv"]
-)
+uploaded_file = st.file_uploader("Upload CSV with Date, Ratings, and subcategory columns", type=["csv"])
 
 if uploaded_file:
     try:
@@ -133,13 +122,10 @@ if uploaded_file:
 
         # ---- FORECAST DATE ----
         st.header("📅 Forecast Date")
-        st.write(
-            "Pick the date to see your rolling 6-month average. "
-            "Older reviews will drop off on this date."
-        )
+        st.write("Pick the date to see your rolling 6-month average. Older reviews drop off on this date.")
 
         default_date = datetime.today().date()
-        cutoff_date = st.date_input("Select forecast date:", default_date)
+        cutoff_date = st.date_input("Forecast date:", default_date)
 
         six_months_ago = pd.to_datetime(cutoff_date) - pd.DateOffset(months=6)
 
@@ -160,28 +146,24 @@ if uploaded_file:
 
         # ---- SUBCATEGORY AVERAGES ----
         st.subheader("📊 Subcategory Averages")
-        for col in [
-            "Value For Money", "Security", "Location",
-            "Staff", "Atmosphere", "Cleanliness", "Facilities"
-        ]:
+        for col in ["Value For Money", "Security", "Location", "Staff",
+                    "Atmosphere", "Cleanliness", "Facilities"]:
             avg = current_reviews_df[col].mean() if not current_reviews_df.empty else 0.0
             st.write(f"{col}: {avg:.2f} / 10.00")
 
         # ---- TARGET & EXPECTED ----
         st.header("🎯 Forecast Inputs")
-        st.write("**Target rolling average:** The 6-month score you want to reach.")
+        st.write("**Target rolling average:** This is your goal for the 6-month average.")
         target_avg = st.number_input(
-            "Target rolling average:",
-            value=9.0, min_value=0.0, max_value=10.0, step=0.1, format="%.2f"
+            "Target rolling average:", value=9.0, min_value=0.0, max_value=10.0, step=0.1, format="%.2f"
         )
 
-        st.write("**Expected average for new reviews:** The realistic average score you expect from new reviews.")
+        st.write("**Expected average for new reviews:** Realistic average you expect new guests to give.")
         expected_new_avg = st.number_input(
-            "Expected average for new reviews:",
-            value=9.2, min_value=0.1, max_value=10.0, step=0.1, format="%.2f"
+            "Expected average for new reviews:", value=9.2, min_value=0.1, max_value=10.0, step=0.1, format="%.2f"
         )
 
-        # ---- CALCULATE ----
+        # ---- CALC ----
         current_total = current_avg * current_reviews_count
         drop_total = dropped_reviews_avg * dropped_reviews_count
         rolling_total_after_drop = current_total - drop_total
