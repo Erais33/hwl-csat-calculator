@@ -2,17 +2,24 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
-import nltk
 from collections import Counter
+import nltk
 
-# Download NLTK resources if missing
-nltk.download('punkt')
-nltk.download('stopwords')
+# ---- SAFELY CHECK FOR NLTK RESOURCES ----
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt')
+
+try:
+    nltk.data.find('corpora/stopwords')
+except LookupError:
+    nltk.download('stopwords')
 
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 
-# ---- STYLE ----
+# ---- STYLING ----
 st.markdown("""
 <style>
 html, body, .stApp { background-color: #F5F7FA; color: #002F4B; }
@@ -42,6 +49,7 @@ Upload a CSV with these columns: **Date**, **Ratings**, **Value For Money**, **S
 uploaded_file = st.file_uploader("Upload your CSV file", type=["csv"])
 
 if uploaded_file:
+    # ---- SAFE LOAD ----
     df = pd.read_csv(
         uploaded_file,
         quotechar='"',
@@ -61,7 +69,7 @@ if uploaded_file:
     rolling_reviews = len(rolling_df)
     current_avg = rolling_df['Ratings'].mean()
 
-    st.subheader(f"📊 Current Rolling (Last 6 months until {cutoff_date})")
+    st.subheader(f"📊 Current Rolling (Last 6 months)")
     st.write(f"Rolling reviews: {rolling_reviews} | Average: {current_avg:.2f} / 10.00")
 
     # ---- SUB-CATEGORIES ----
@@ -128,7 +136,7 @@ if uploaded_file:
         new_reviews_needed = max(0, new_reviews_needed)
         total_score_needed = new_reviews_needed * expected_new_avg
 
-        st.info(f"⭐ To reach {target_avg:.2f}, you’d need about {new_reviews_needed:.0f} new reviews averaging {expected_new_avg:.2f} / 10.00, totaling {total_score_needed:.0f} points.")
+        st.info(f"⭐️ To reach {target_avg:.2f}, you’d need about {new_reviews_needed:.0f} new reviews averaging {expected_new_avg:.2f} / 10.00 (total points needed: {total_score_needed:.0f}).")
     else:
         st.info("⚠️ Your expected average must be higher than your target to calculate realistically.")
 
