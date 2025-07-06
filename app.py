@@ -5,89 +5,106 @@ from datetime import datetime
 # Page configuration
 st.set_page_config(page_title="Rolling Average Forecast", layout="centered")
 
-# --- HOSTELWORLD BRAND STYLING ---
+# --- PROFESSIONAL UI STYLING ---
 st.markdown("""
 <style>
-    /* General App Styling */
+    /* --- Base & Background --- */
     html, body, .stApp {
-        background-color: #343A40 !important; /* Lighter, charcoal background */
-        color: #F5F5F5; /* Off-white text for readability */
-        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        background: linear-gradient(180deg, #232834 0%, #2E3440 100%);
+        color: #ECEFF4; /* Soft off-white for text */
+        font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     }
 
-    /* Headers & Important Text (e.g., bolded) */
-    h1, h2, h3, h4, h5, h6, strong {
-        color: #FF6A17; /* Hostelworld Orange */
+    /* --- Typography --- */
+    /* Main title */
+    .st-emotion-cache-10trblm {
+        color: #ECEFF4; /* Main title in clean white */
+        text-align: center;
+        font-weight: 700;
     }
     
-    /* Center the main title */
-    .st-emotion-cache-10trblm {
-        text-align: center;
+    /* General text */
+    p, .st-emotion-cache-1c7y2kd {
+        color: #D8DEE9; /* Slightly dimmer white for paragraphs */
     }
 
-    /* Buttons */
-    .stButton > button {
-        background-color: #FF6A17; /* Hostelworld Orange */
-        color: #FFFFFF;
-        border-radius: 20px;
-        border: 1px solid #FF6A17;
-        font-weight: bold;
-        padding: 10px 20px;
-        transition: all 0.3s ease;
+    /* Target specific headers to be orange */
+    h2 {
+        color: #FF7A2A !important; /* Rich accent orange */
+        border-bottom: 2px solid #3B4252;
+        padding-bottom: 10px;
+        margin-top: 2rem;
+        margin-bottom: 1.5rem;
     }
-    .stButton > button:hover {
-        background-color: #FFFFFF;
-        color: #FF6A17;
-        border: 1px solid #FF6A17;
+    
+    /* Ensure subheaders and other text are NOT orange */
+    h3, strong {
+        color: #E5E9F0; /* Brighter white for emphasis */
     }
 
-    /* Input Widgets */
+    /* --- Widgets & Inputs --- */
     .stTextInput > div > div > input,
     .stDateInput > div > div > input,
     .stNumberInput > div > div > input {
-        background-color: #495057; /* Lighter grey for inputs */
-        color: #F5F5F5;
+        background-color: #3B4252; /* Dark slate for inputs */
+        color: #ECEFF4;
         border-radius: 8px;
-        border: 1px solid #555555;
+        border: 1px solid #4C566A;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .stNumberInput, .stDateInput, .stTextInput {
+        margin-bottom: 1rem;
     }
 
-    /* File Uploader */
+    /* --- Buttons --- */
+    .stButton > button {
+        background-color: #FF7A2A;
+        color: #FFFFFF;
+        border-radius: 8px;
+        border: none;
+        font-weight: 600;
+        padding: 12px 24px;
+        transition: all 0.3s ease-in-out;
+        box-shadow: 0 4px 10px rgba(255, 122, 42, 0.2);
+    }
+    .stButton > button:hover {
+        background-color: #FFFFFF;
+        color: #FF7A2A;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    }
+
+    /* --- File Uploader --- */
     .stFileUploader {
-        border: 2px dashed #FF6A17;
-        background-color: #495057; /* Lighter grey for uploader */
+        border: 2px dashed #4C566A;
+        background-color: rgba(76, 86, 106, 0.3);
         border-radius: 10px;
         padding: 1.5rem;
-        text-align: center;
     }
     .stFileUploader label {
-        color: #FF6A17;
-        font-weight: bold;
+        color: #88C0D0; /* Icy blue for uploader label */
+        font-weight: 600;
     }
 
-    /* Success and Info Boxes */
-    .stAlert {
-        border-radius: 8px;
+    /* --- Info & Success Boxes --- */
+    div[data-testid="stInfo"] {
+        background-color: rgba(136, 192, 208, 0.1);
+        border-left: 5px solid #88C0D0;
     }
     div[data-testid="stSuccess"] {
-        background-color: rgba(0, 128, 0, 0.1);
-        color: #90EE90;
-    }
-    div[data-testid="stInfo"] {
-        background-color: rgba(255, 106, 23, 0.1);
-        color: #FF6A17;
+        background-color: rgba(163, 190, 140, 0.1);
+        border-left: 5px solid #A3BE8C;
+        color: #A3BE8C;
     }
     
-    /* Horizontal Separator */
+    /* --- Separator & Caption --- */
     hr {
-        border-top: 1px solid #FF6A17;
+        border-top: 1px solid #3B4252;
     }
-    
-    /* Caption */
     .st-emotion-cache-1b0udgb {
-        color: #AAAAAA;
+        color: #4C566A;
         text-align: center;
     }
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -95,8 +112,9 @@ st.markdown("""
 st.title("📊 Rolling Average Forecast")
 
 # ---- UPLOAD ----
-st.header("📤 Upload your Hostelworld CSV")
-uploaded_file = st.file_uploader("Upload CSV with Date, Ratings, and subcategory columns", type=["csv"])
+# This header is an h2, but we use st.subheader which renders as h3 to keep it white
+st.subheader("📤 Upload your Hostelworld CSV")
+uploaded_file = st.file_uploader("Upload your CSV file", type=["csv"])
 
 if uploaded_file:
     try:
@@ -112,19 +130,17 @@ if uploaded_file:
             on_bad_lines='skip'
         )
 
-        st.success(f"✅ Uploaded! Total rows: {len(df)}")
+        st.success(f"✅ File uploaded successfully with {len(df)} rows.")
 
         df["Ratings"] = pd.to_numeric(df["Ratings"], errors='coerce')
         valid_reviews = df.dropna(subset=["Ratings", "Date"])
 
-        st.write(f"Valid reviews: {len(valid_reviews)}")
-
         # ---- FORECAST DATE ----
         st.header("📅 Forecast Date")
-        st.write("Pick the date to see your rolling 6-month average. Older reviews drop off on this date.")
+        st.write("Select a date to calculate the 6-month rolling average. Reviews older than 6 months from this date will be dropped.")
 
         default_date = datetime.today().date()
-        cutoff_date = st.date_input("Forecast date:", default_date)
+        cutoff_date = st.date_input("Forecast Cutoff Date:", default_date)
 
         six_months_ago = pd.to_datetime(cutoff_date) - pd.DateOffset(months=6)
 
@@ -136,68 +152,78 @@ if uploaded_file:
         current_avg = current_reviews_df["Ratings"].mean() if not current_reviews_df.empty else 0.0
         current_reviews_count = len(current_reviews_df)
 
-        dropped_reviews_count = len(dropping_reviews_df)
-        dropped_reviews_avg = dropping_reviews_df["Ratings"].mean() if not dropping_reviews_df.empty else 0.0
-
-        st.subheader("🔍 Current Reviews Summary")
-        st.write(f"Staying reviews: {current_reviews_count} | Avg: {current_avg:.2f} / 10.00")
-        st.write(f"Dropping reviews: {dropped_reviews_count} | Avg: {dropped_reviews_avg:.2f} / 10.00")
-
-        # ---- SUBCATEGORY AVERAGES ----
-        st.subheader("📊 Subcategory Averages")
-        for col in ["Value For Money", "Security", "Location", "Staff",
-                    "Atmosphere", "Cleanliness", "Facilities"]:
-            avg = current_reviews_df[col].mean() if not current_reviews_df.empty else 0.0
-            st.write(f"**{col}:** {avg:.2f} / 10.00")
-
-        # ---- TARGET & EXPECTED ----
+        # ---- FORECAST INPUTS ----
         st.header("🎯 Forecast Inputs")
-        st.write("**Target rolling average:** This is your goal for the 6-month average.")
-        target_avg = st.number_input(
-            "Target rolling average:", value=9.0, min_value=0.0, max_value=10.0, step=0.1, format="%.2f"
-        )
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            target_avg = st.number_input(
+                "Target Rolling Average:", value=9.0, min_value=0.0, max_value=10.0, step=0.1, format="%.2f"
+            )
+        with col2:
+            expected_new_avg = st.number_input(
+                "Expected New Review Average:", value=9.2, min_value=0.1, max_value=10.0, step=0.1, format="%.2f"
+            )
 
-        st.write("**Expected average for new reviews:** Realistic average you expect new guests to give.")
-        expected_new_avg = st.number_input(
-            "Expected average for new reviews:", value=9.2, min_value=0.1, max_value=10.0, step=0.1, format="%.2f"
-        )
-
-        # ---- CALC ----
+        # ---- CALCULATION ----
         current_total = current_avg * current_reviews_count
-        drop_total = dropped_reviews_avg * dropped_reviews_count
-        rolling_total_after_drop = current_total - drop_total
-
-        base_reviews_remaining = current_reviews_count - dropped_reviews_count
-        if base_reviews_remaining < 0:
-            base_reviews_remaining = 0
-
-        needed_points_from_new = target_avg * (base_reviews_remaining + 1) - rolling_total_after_drop
-
+        base_reviews_remaining = len(current_reviews_df[current_reviews_df['Date'] > six_months_ago])
+        rolling_total_after_drop = current_reviews_df[current_reviews_df['Date'] > six_months_ago]['Ratings'].sum()
+        
+        needed_total_points = target_avg * (base_reviews_remaining + 1) # Target for N+1 reviews
+        points_to_gain = needed_total_points - rolling_total_after_drop
+        
+        new_reviews_needed = 0
         if expected_new_avg > target_avg:
-            new_reviews_needed = needed_points_from_new / (expected_new_avg - target_avg)
+            # Each new review adds (expected_new_avg - target_avg) to the 'surplus'
+            new_reviews_needed = points_to_gain / (expected_new_avg - target_avg)
             new_reviews_needed = max(0, new_reviews_needed)
-        else:
-            new_reviews_needed = 0
 
         new_avg_if_none = (
             rolling_total_after_drop / base_reviews_remaining if base_reviews_remaining > 0 else 0.0
         )
+        
+        # ---- SUBCATEGORY AVERAGES ----
+        st.header("📊 Subcategory Averages")
+        st.write("Current 6-month average for each category:")
+        
+        subcat_cols = ["Value For Money", "Security", "Location", "Staff",
+                       "Atmosphere", "Cleanliness", "Facilities"]
+        avg_ratings = {}
+        for col in subcat_cols:
+             avg_ratings[col] = current_reviews_df[col].mean() if not current_reviews_df.empty else 0.0
+        
+        # Display in three columns for a cleaner layout
+        cat_col1, cat_col2, cat_col3 = st.columns(3)
+        cols_list = [cat_col1, cat_col2, cat_col3]
+        for i, (cat, avg) in enumerate(avg_ratings.items()):
+            with cols_list[i % 3]:
+                st.metric(label=cat, value=f"{avg:.2f}")
 
+
+        # ---- FORECAST RESULTS ----
         st.header("📈 Forecast Results")
-        st.write(f"📉 If you add no new reviews, your rolling average may drop to: **{new_avg_if_none:.2f} / 10.00**")
-        if new_reviews_needed > 0:
-            st.write(
-                f"⭐️ To reach **{target_avg:.2f}**, you’d need about **{new_reviews_needed:.0f}** new reviews "
-                f"averaging **{expected_new_avg:.2f} / 10.00**."
-            )
+
+        st.metric(
+            label="Predicted Average (with no new reviews)",
+            value=f"{new_avg_if_none:.2f}",
+            delta=f"{new_avg_if_none - current_avg:.2f} vs. current",
+            delta_color="inverse"
+        )
+        
+        if expected_new_avg <= target_avg:
+            st.warning("Your 'Expected New Review Average' must be higher than your target to make progress.")
         else:
-            st.write("⚠️ Your expected average must be higher than your target for this to work realistically.")
+            st.success(
+                f"To reach your target of **{target_avg:.2f}**, you need approximately "
+                f"**{new_reviews_needed:.0f}** new reviews averaging **{expected_new_avg:.2f}**."
+            )
 
     except Exception as e:
-        st.error(f"❌ Error reading CSV: {e}")
+        st.error(f"❌ An error occurred: {e}")
 
 else:
-    st.info("📂 Upload your CSV file to start.")
+    st.info("📂 Please upload your Hostelworld CSV file to begin the forecast.")
 
 st.write("---")
 st.caption("Made by Erwan Decotte")
