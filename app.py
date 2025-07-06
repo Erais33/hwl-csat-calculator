@@ -7,7 +7,7 @@ st.markdown(
     """
     <style>
     html, body, .stApp {
-        background: linear-gradient(to bottom, #f2f7f9, #ffffff);
+        background: linear-gradient(to bottom, #FDE3CF, #ffffff);
         color: #000000;
     }
 
@@ -42,13 +42,10 @@ st.markdown(
 )
 
 # ---- HEADER ----
-st.title("📊 • Rolling Average Forecast")
+st.title("📊 St Christopher's Inns • Rolling Average Forecast")
 
 # ---- UPLOAD ----
 st.header("📤 Upload Reviews CSV")
-st.markdown(
-    "Upload a CSV with **Date**, **Ratings**, and subcategory columns like Value For Money, Security, Location, etc."
-)
 
 uploaded_file = st.file_uploader("Upload your Hostelworld CSV file", type=["csv"])
 
@@ -155,7 +152,7 @@ else:
 st.markdown(
     """
     ---
-    <sub>Made by Erwan Decotte</sub>
+    <sub>Made by Erwan Decotte • St Christopher's Inns</sub>
     """,
     unsafe_allow_html=True
 )
