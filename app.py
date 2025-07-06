@@ -17,17 +17,17 @@ st.markdown(
 
     input, .stDateInput input {
         background-color: #FFFFFF !important;
-        color: #000000 !important;
+        color: #000000;
     }
 
     .stNumberInput>div>div>input {
         background-color: #FFFFFF !important;
-        color: #000000 !important;
+        color: #000000;
     }
 
     div[data-testid="stAlert-success"], 
     div[data-testid="stAlert-info"] {
-        color: #000000 !important;
+        color: #000000;
     }
     </style>
     """,
