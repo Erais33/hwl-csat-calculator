@@ -2,119 +2,83 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-# Page configuration
+# ---- PAGE CONFIG ----
 st.set_page_config(page_title="Rolling Average Forecast", layout="centered")
 
-# --- PROFESSIONAL UI STYLING ---
-st.markdown("""
-<style>
-    /* --- Base & Background --- */
+# ---- MODERN UI STYLING ----
+st.markdown(
+    """
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
     html, body, .stApp {
-        background: linear-gradient(180deg, #232834 0%, #2E3440 100%);
-        color: #ECEFF4; /* Soft off-white for text */
-        font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        background-color: #F0F2F6;  /* Clean, light grey background */
+        color: #1E1E1E;             /* Dark text for readability */
+        font-family: 'Inter', sans-serif;
     }
 
-    /* --- Typography --- */
-    /* Main title */
-    .st-emotion-cache-10trblm {
-        color: #ECEFF4; /* Main title in clean white */
-        text-align: center;
+    .st-emotion-cache-10trblm { /* Main title */
+        color: #0068C9; /* Vibrant blue */
         font-weight: 700;
-    }
-    
-    /* General text */
-    p, .st-emotion-cache-1c7y2kd {
-        color: #D8DEE9; /* Slightly dimmer white for paragraphs */
+        text-align: center;
     }
 
-    /* Target specific headers to be orange */
-    h2 {
-        color: #FF7A2A !important; /* Rich accent orange */
-        border-bottom: 2px solid #3B4252;
-        padding-bottom: 10px;
-        margin-top: 2rem;
-        margin-bottom: 1.5rem;
+    h2 { /* Headers */
+        color: #0068C9; /* Vibrant blue */
+        font-weight: 600;
+        border-bottom: 2px solid #D1D9E4;
+        padding-bottom: 8px;
     }
     
-    /* Ensure subheaders and other text are NOT orange */
-    h3, strong {
-        color: #E5E9F0; /* Brighter white for emphasis */
+    .st-emotion-cache-z5fcl4 { /* Subheaders */
+        background-color: rgba(0, 104, 201, 0.1);
+        border-left: 5px solid #0068C9;
+        padding: 1rem;
+        border-radius: 8px;
     }
 
-    /* --- Widgets & Inputs --- */
+    .stButton > button {
+        background-color: #0068C9;
+        color: #FFFFFF;
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 10px 20px;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .stButton > button:hover {
+        background-color: #0052A1;
+    }
+
     .stTextInput > div > div > input,
     .stDateInput > div > div > input,
     .stNumberInput > div > div > input {
-        background-color: #3B4252; /* Dark slate for inputs */
-        color: #ECEFF4;
-        border-radius: 8px;
-        border: 1px solid #4C566A;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    .stNumberInput, .stDateInput, .stTextInput {
-        margin-bottom: 1rem;
-    }
-
-    /* --- Buttons --- */
-    .stButton > button {
-        background-color: #FF7A2A;
-        color: #FFFFFF;
-        border-radius: 8px;
-        border: none;
-        font-weight: 600;
-        padding: 12px 24px;
-        transition: all 0.3s ease-in-out;
-        box-shadow: 0 4px 10px rgba(255, 122, 42, 0.2);
-    }
-    .stButton > button:hover {
         background-color: #FFFFFF;
-        color: #FF7A2A;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(0,0,0,0.3);
-    }
-
-    /* --- File Uploader --- */
-    .stFileUploader {
-        border: 2px dashed #4C566A;
-        background-color: rgba(76, 86, 106, 0.3);
-        border-radius: 10px;
-        padding: 1.5rem;
-    }
-    .stFileUploader label {
-        color: #88C0D0; /* Icy blue for uploader label */
-        font-weight: 600;
-    }
-
-    /* --- Info & Success Boxes --- */
-    div[data-testid="stInfo"] {
-        background-color: rgba(136, 192, 208, 0.1);
-        border-left: 5px solid #88C0D0;
-    }
-    div[data-testid="stSuccess"] {
-        background-color: rgba(163, 190, 140, 0.1);
-        border-left: 5px solid #A3BE8C;
-        color: #A3BE8C;
+        border-radius: 8px;
+        border: 1px solid #D1D9E4;
     }
     
-    /* --- Separator & Caption --- */
-    hr {
-        border-top: 1px solid #3B4252;
+    div[data-testid="stMetric"], .st-emotion-cache-z5fcl4 {
+        background-color: #FFFFFF;
+        border: 1px solid #D1D9E4;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     }
-    .st-emotion-cache-1b0udgb {
-        color: #4C566A;
-        text-align: center;
-    }
-</style>
-""", unsafe_allow_html=True)
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-
+# ---- TITLE ----
 st.title("📊 Rolling Average Forecast")
 
 # ---- UPLOAD ----
-# This header is an h2, but we use st.subheader which renders as h3 to keep it white
-st.subheader("📤 Upload your Hostelworld CSV")
-uploaded_file = st.file_uploader("Upload your CSV file", type=["csv"])
+st.header("📤 Upload your Hostelworld CSV")
+uploaded_file = st.file_uploader(
+    "Upload CSV file with Date, Ratings, and subcategory columns",
+    type=["csv"]
+)
 
 if uploaded_file:
     try:
@@ -130,17 +94,20 @@ if uploaded_file:
             on_bad_lines='skip'
         )
 
-        st.success(f"✅ File uploaded successfully with {len(df)} rows.")
+        st.success(f"✅ Uploaded! Total rows: {len(df)}")
 
         df["Ratings"] = pd.to_numeric(df["Ratings"], errors='coerce')
         valid_reviews = df.dropna(subset=["Ratings", "Date"])
 
         # ---- FORECAST DATE ----
         st.header("📅 Forecast Date")
-        st.write("Select a date to calculate the 6-month rolling average. Reviews older than 6 months from this date will be dropped.")
+        st.write(
+            "Pick the date to see your rolling 6-month average. "
+            "Older reviews will drop off on this date."
+        )
 
         default_date = datetime.today().date()
-        cutoff_date = st.date_input("Forecast Cutoff Date:", default_date)
+        cutoff_date = st.date_input("Select forecast date:", default_date)
 
         six_months_ago = pd.to_datetime(cutoff_date) - pd.DateOffset(months=6)
 
@@ -152,78 +119,75 @@ if uploaded_file:
         current_avg = current_reviews_df["Ratings"].mean() if not current_reviews_df.empty else 0.0
         current_reviews_count = len(current_reviews_df)
 
-        # ---- FORECAST INPUTS ----
-        st.header("🎯 Forecast Inputs")
-        
+        st.subheader("🔍 Current Reviews Summary")
         col1, col2 = st.columns(2)
-        with col1:
+        col1.metric("Staying Reviews", f"{current_reviews_count}", f"Avg: {current_avg:.2f}")
+        col2.metric("Dropping Reviews", f"{len(dropping_reviews_df)}", f"Avg: {dropping_reviews_df['Ratings'].mean():.2f}")
+
+        # ---- SUBCATEGORY AVERAGES ----
+        st.header("📊 Subcategory Averages")
+        sub_cols = st.columns(3)
+        categories = ["Value For Money", "Security", "Location", "Staff", "Atmosphere", "Cleanliness", "Facilities"]
+        for i, col_name in enumerate(categories):
+            with sub_cols[i % 3]:
+                avg = current_reviews_df[col_name].mean() if not current_reviews_df.empty else 0.0
+                st.metric(f"{col_name}", f"{avg:.2f}")
+
+        # ---- TARGET & EXPECTED ----
+        st.header("🎯 Forecast Inputs")
+        input_col1, input_col2 = st.columns(2)
+        with input_col1:
             target_avg = st.number_input(
-                "Target Rolling Average:", value=9.0, min_value=0.0, max_value=10.0, step=0.1, format="%.2f"
+                "Target rolling average:",
+                value=9.0, min_value=0.0, max_value=10.0, step=0.1, format="%.2f"
             )
-        with col2:
+        with input_col2:
             expected_new_avg = st.number_input(
-                "Expected New Review Average:", value=9.2, min_value=0.1, max_value=10.0, step=0.1, format="%.2f"
+                "Expected average for new reviews:",
+                value=9.2, min_value=0.1, max_value=10.0, step=0.1, format="%.2f"
             )
 
-        # ---- CALCULATION ----
+        # ---- CALCULATE ----
+        dropped_reviews_avg = dropping_reviews_df["Ratings"].mean() if not dropping_reviews_df.empty else 0.0
+        dropped_reviews_count = len(dropping_reviews_df)
+        
         current_total = current_avg * current_reviews_count
-        base_reviews_remaining = len(current_reviews_df[current_reviews_df['Date'] > six_months_ago])
-        rolling_total_after_drop = current_reviews_df[current_reviews_df['Date'] > six_months_ago]['Ratings'].sum()
-        
-        needed_total_points = target_avg * (base_reviews_remaining + 1) # Target for N+1 reviews
-        points_to_gain = needed_total_points - rolling_total_after_drop
-        
-        new_reviews_needed = 0
+        drop_total = dropped_reviews_avg * dropped_reviews_count
+        rolling_total_after_drop = current_total - drop_total
+
+        base_reviews_remaining = current_reviews_count - dropped_reviews_count
+        if base_reviews_remaining < 0:
+            base_reviews_remaining = 0
+
+        needed_points_from_new = target_avg * (base_reviews_remaining + 1) - rolling_total_after_drop
+
         if expected_new_avg > target_avg:
-            # Each new review adds (expected_new_avg - target_avg) to the 'surplus'
-            new_reviews_needed = points_to_gain / (expected_new_avg - target_avg)
+            new_reviews_needed = needed_points_from_new / (expected_new_avg - target_avg)
             new_reviews_needed = max(0, new_reviews_needed)
+        else:
+            new_reviews_needed = 0
 
         new_avg_if_none = (
             rolling_total_after_drop / base_reviews_remaining if base_reviews_remaining > 0 else 0.0
         )
-        
-        # ---- SUBCATEGORY AVERAGES ----
-        st.header("📊 Subcategory Averages")
-        st.write("Current 6-month average for each category:")
-        
-        subcat_cols = ["Value For Money", "Security", "Location", "Staff",
-                       "Atmosphere", "Cleanliness", "Facilities"]
-        avg_ratings = {}
-        for col in subcat_cols:
-             avg_ratings[col] = current_reviews_df[col].mean() if not current_reviews_df.empty else 0.0
-        
-        # Display in three columns for a cleaner layout
-        cat_col1, cat_col2, cat_col3 = st.columns(3)
-        cols_list = [cat_col1, cat_col2, cat_col3]
-        for i, (cat, avg) in enumerate(avg_ratings.items()):
-            with cols_list[i % 3]:
-                st.metric(label=cat, value=f"{avg:.2f}")
 
-
-        # ---- FORECAST RESULTS ----
         st.header("📈 Forecast Results")
-
-        st.metric(
-            label="Predicted Average (with no new reviews)",
-            value=f"{new_avg_if_none:.2f}",
-            delta=f"{new_avg_if_none - current_avg:.2f} vs. current",
-            delta_color="inverse"
-        )
-        
-        if expected_new_avg <= target_avg:
-            st.warning("Your 'Expected New Review Average' must be higher than your target to make progress.")
+        if new_reviews_needed > 0 and expected_new_avg > target_avg:
+             st.success(
+                 f"To reach **{target_avg:.2f}**, you need about **{new_reviews_needed:.0f}** new reviews "
+                 f"averaging **{expected_new_avg:.2f}**."
+             )
         else:
-            st.success(
-                f"To reach your target of **{target_avg:.2f}**, you need approximately "
-                f"**{new_reviews_needed:.0f}** new reviews averaging **{expected_new_avg:.2f}**."
-            )
+             st.warning("Your 'Expected average' must be higher than your 'Target average' for this to work.")
+        
+        st.info(f"If you get no new reviews, your average will drop to **{new_avg_if_none:.2f}**.")
+
 
     except Exception as e:
-        st.error(f"❌ An error occurred: {e}")
+        st.error(f"❌ Error reading or processing the CSV file: {e}")
 
 else:
-    st.info("📂 Please upload your Hostelworld CSV file to begin the forecast.")
+    st.info("📂 Upload your CSV file to get started.")
 
 st.write("---")
 st.caption("Made by Erwan Decotte")
