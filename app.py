@@ -16,9 +16,9 @@ st.markdown(
     .main-container {
         background-color: #FFA726; /* Inner orange */
         color: black;
-        border-radius: 12px;
+        border-radius: 40px;
         padding: 3rem;
-        max-width: 2000px;
+        max-width: 800px;
         margin: auto;
     }
 
