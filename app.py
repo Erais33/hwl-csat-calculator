@@ -2,24 +2,10 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
+import re
 from collections import Counter
-import nltk
 
-# ---- SAFELY CHECK FOR NLTK RESOURCES ----
-try:
-    nltk.data.find('tokenizers/punkt')
-except LookupError:
-    nltk.download('punkt')
-
-try:
-    nltk.data.find('corpora/stopwords')
-except LookupError:
-    nltk.download('stopwords')
-
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-
-# ---- STYLING ----
+# ---- STYLE ----
 st.markdown("""
 <style>
 html, body, .stApp { background-color: #F5F7FA; color: #002F4B; }
@@ -99,13 +85,16 @@ if uploaded_file:
     ax.set_ylim(0, 10)
     st.pyplot(fig)
 
-    # ---- COMMENT INSIGHTS ----
+    # ---- COMMENTS INSIGHTS ----
     st.subheader("📝 Comments Summary")
     all_comments = ' '.join(rolling_df['Comment'].dropna().astype(str)).lower()
-    words = word_tokenize(all_comments)
-    words = [w for w in words if w.isalpha() and w not in stopwords.words('english')]
+    all_comments = re.sub(r'[^\w\s]', '', all_comments)  # remove punctuation
+    words = all_comments.split()
+    words = [w for w in words if len(w) > 2]  # drop tiny words
+
     word_counts = Counter(words)
     most_common = word_counts.most_common(10)
+
     st.write("**Most common words:**")
     st.write(', '.join([w for w, _ in most_common]))
 
