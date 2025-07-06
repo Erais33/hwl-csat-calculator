@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime
 
 # ---- PAGE STYLE ----
-st.set_page_config(page_title="St Christopher's Inns • Rolling Average Forecast", layout="centered")
+st.set_page_config(page_title="Rolling Average Forecast", layout="centered")
 
 st.markdown(
     """
@@ -34,7 +34,7 @@ st.markdown(
 )
 
 # ---- HEADER ----
-st.title("📊 St Christopher's Inns • Rolling Average Forecast")
+st.title("📊 Rolling Average Forecast")
 
 # ---- UPLOAD ----
 st.header("📤 Upload Reviews CSV")
@@ -91,4 +91,63 @@ if uploaded_file:
         for col in ["Value For Money", "Security", "Location", "Staff",
                     "Atmosphere", "Cleanliness", "Facilities"]:
             avg = current_reviews_df[col].mean() if not current_reviews_df.empty else 0.0
-            st.write(f"- **{col}**: {avg:.2f}
+            st.write(f"- **{col}**: {avg:.2f} / 10.00")
+
+        # ---- TARGET INPUT ----
+        st.header("🎯 Forecast Inputs")
+
+        target_avg = st.number_input(
+            "🎯 Target rolling average:",
+            help="This is the score you want your rolling 6-month average to reach.",
+            value=9.0, min_value=0.0, max_value=10.0, step=0.1, format="%.2f"
+        )
+
+        expected_new_avg = st.number_input(
+            "✍️ Expected average for new reviews:",
+            help="Estimate the realistic average score you expect from new reviews.",
+            value=9.2, min_value=0.1, max_value=10.0, step=0.1, format="%.2f"
+        )
+
+        # ---- CALCULATE ----
+        current_total = current_avg * current_reviews_count
+        drop_total = dropped_reviews_avg * dropped_reviews_count
+        rolling_total_after_drop = current_total - drop_total
+
+        base_reviews_remaining = current_reviews_count - dropped_reviews_count
+        if base_reviews_remaining < 0:
+            base_reviews_remaining = 0
+
+        needed_points_from_new = target_avg * (base_reviews_remaining + 1) - rolling_total_after_drop
+
+        if expected_new_avg > target_avg:
+            new_reviews_needed = needed_points_from_new / (expected_new_avg - target_avg)
+            new_reviews_needed = max(0, new_reviews_needed)
+        else:
+            new_reviews_needed = 0
+
+        new_avg_if_none = (
+            rolling_total_after_drop / base_reviews_remaining if base_reviews_remaining > 0 else 0.0
+        )
+
+        # ---- FORECAST RESULTS ----
+        st.header("📈 Forecast")
+        st.write(
+            f"📉 If you add no new reviews, your rolling average would drop to: **{new_avg_if_none:.2f} / 10.00**"
+        )
+        if new_reviews_needed > 0:
+            st.write(
+                f"⭐️ To reach **{target_avg:.2f}**, you’d need about **{new_reviews_needed:.0f}** new reviews "
+                f"averaging **{expected_new_avg:.2f} / 10.00**."
+            )
+        else:
+            st.write("⚠️ Your expected average must be higher than your target to calculate realistically.")
+
+    except Exception as e:
+        st.error(f"❌ Error reading your CSV: {e}")
+else:
+    st.info("📂 Upload your CSV to begin your forecast.")
+
+st.markdown(
+    "<br><sub>Made by Erwan Decotte</sub>",
+    unsafe_allow_html=True
+)
