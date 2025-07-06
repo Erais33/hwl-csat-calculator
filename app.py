@@ -7,28 +7,33 @@ st.markdown(
     """
     <style>
     html, body, .stApp {
-        background-color: #FFFFFF;
+        background: linear-gradient(to bottom, #f2f7f9, #ffffff);
         color: #000000;
     }
 
     .block-container {
+        background-color: #ffffff;
         padding: 2rem;
+        border-radius: 12px;
+        max-width: 1000px;
+        margin: auto;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
 
     input, .stDateInput input {
-        background-color: #FFFFFF !important;
+        background-color: #ffffff !important;
         color: #000000 !important;
     }
 
     .stNumberInput>div>div>input {
-        background-color: #FFFFFF !important;
+        background-color: #ffffff !important;
         color: #000000 !important;
     }
 
     div[data-testid="stAlert-success"], 
     div[data-testid="stAlert-info"], 
     div[data-testid="stAlert-warning"] {
-        background-color: #FFFFFF !important;
+        background-color: #ffffff !important;
         color: #000000 !important;
     }
     </style>
@@ -37,7 +42,7 @@ st.markdown(
 )
 
 # ---- HEADER ----
-st.title("📊 St Christopher's Inns • Rolling Average Forecast")
+st.title("📊 • Rolling Average Forecast")
 
 # ---- UPLOAD ----
 st.header("📤 Upload Reviews CSV")
@@ -94,7 +99,6 @@ if uploaded_file:
 
         # ---- TARGET ----
         st.header("🎯 Set Your Target")
-
         st.markdown(
             """
             📖 **What is the Target Rolling Average?**
@@ -151,7 +155,7 @@ else:
 st.markdown(
     """
     ---
-    <sub>Made by Erwan Decotte • St Christopher's Inns</sub>
+    <sub>Made by Erwan Decotte</sub>
     """,
     unsafe_allow_html=True
 )
