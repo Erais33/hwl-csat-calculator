@@ -46,13 +46,13 @@ st.markdown(
 )
 
 # ---- HEADER ----
-st.title("📊 St Christopher's Inns • Rolling Average Forecast")
+st.title("📊 Hostelworld • Rolling Average Forecast")
 
 # ---- UPLOAD ----
 st.header("📤 Upload Reviews CSV")
 
 uploaded_file = st.file_uploader(
-    "Upload your Hostelworld CSV file",  # ✅ This is the only label, keep it short
+    "Upload your Hostelworld CSV file for the last 6 months",  # ✅ This is the only label, keep it short
     type=["csv"]
 )
 
@@ -159,7 +159,7 @@ else:
 st.markdown(
     """
     ---
-    <sub>Made by Erwan Decotte • St Christopher's Inns</sub>
+    <sub>• Made by Erwan Decotte •</sub>
     """,
     unsafe_allow_html=True
 )
