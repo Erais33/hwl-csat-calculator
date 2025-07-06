@@ -10,7 +10,7 @@ st.markdown("""
 <style>
     /* General App Styling */
     html, body, .stApp {
-        background-color: #1F1F1F !important; /* Dark background */
+        background-color: #343A40 !important; /* Lighter, charcoal background */
         color: #F5F5F5; /* Off-white text for readability */
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     }
@@ -45,7 +45,7 @@ st.markdown("""
     .stTextInput > div > div > input,
     .stDateInput > div > div > input,
     .stNumberInput > div > div > input {
-        background-color: #333333;
+        background-color: #495057; /* Lighter grey for inputs */
         color: #F5F5F5;
         border-radius: 8px;
         border: 1px solid #555555;
@@ -54,7 +54,7 @@ st.markdown("""
     /* File Uploader */
     .stFileUploader {
         border: 2px dashed #FF6A17;
-        background-color: #333333;
+        background-color: #495057; /* Lighter grey for uploader */
         border-radius: 10px;
         padding: 1.5rem;
         text-align: center;
