@@ -6,62 +6,98 @@ from datetime import datetime
 st.set_page_config(page_title="Rolling Average Forecast", layout="centered")
 
 # ---- SIMPLE STYLE: SOFT ORANGE BACKGROUND ----
+import streamlit as st
+
 st.markdown(
     """
     <style>
+    /* General Styles */
     html, body, .stApp {
-        background-color: #FFE5B4;  /* Light orange background */
-        color: #111111;             /* Dark text for good contrast */
-        font-family: Arial, sans-serif;
+        background-color: #1E1E1E;  /* Dark background for a modern look */
+        color: #F5F5F5;             /* Soft white text for high contrast */
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Professional font */
     }
 
+    /* Main content area */
     .block-container {
-        background-color: #FFE5B4;  /* Orange main container */
+        background-color: #2E2E2E;  /* Slightly lighter dark shade for content */
+        border-radius: 10px;        /* Rounded corners for a softer feel */
         padding: 2rem;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
     }
 
-    h1, h2, h3, h4, h5, h6, p, div, span, label {
-        color: #111111 !important;  /* Ensure text is dark for readability */
+    /* Headings and Text */
+    h1, h2, h3, h4, h5, h6 {
+        color: #FFFFFF;             /* Pure white for prominent headings */
     }
 
-    input, .stDateInput input {
-        background-color: #FFFFFF !important;
-        color: #111111 !important;
-        border: 1px solid #444444 !important;
+    p, div, span, label {
+        color: #F5F5F5 !important;   /* Ensures all text is consistently styled */
     }
 
+    /* Input Widgets */
+    input, .stDateInput input, .stTimeInput input {
+        background-color: #3C3C3C !important; /* Darker input fields */
+        color: #F5F5F5 !important;
+        border: 1px solid #555555 !important; /* Subtle border */
+        border-radius: 5px;         /* Rounded corners for inputs */
+    }
+    
     .stNumberInput > div > div > input {
-        background-color: #FFFFFF !important;
-        color: #111111 !important;
+        background-color: #3C3C3C !important;
+        color: #F5F5F5 !important;
     }
 
-    /* Uploader text white for dark uploader box */
+    /* File Uploader */
     .stFileUploader {
-        color: #FFFFFF !important;
+        border: 2px dashed #007BFF;  /* Dashed blue border to attract attention */
+        background-color: #2E2E2E;
+        border-radius: 10px;
+        padding: 1rem;
     }
+
     .stFileUploader label {
-        color: #FFFFFF !important;
-    }
-    .stFileUploader div {
-        color: #FFFFFF !important;
+        color: #007BFF !important;   /* Blue text to match the border */
+        font-weight: bold;
     }
 
     /* Buttons */
     .stButton > button {
-        background-color: #FF7F50 !important;  /* Coral button */
-        color: #FFFFFF !important;             /* White text on buttons */
+        background-color: #007BFF !important; /* Vibrant blue for primary actions */
+        color: #FFFFFF !important;
+        border-radius: 5px;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        font-weight: bold;
+        transition: background-color 0.3s ease; /* Smooth hover effect */
+    }
+    
+    .stButton > button:hover {
+        background-color: #0056b3 !important; /* Darker blue on hover */
     }
 
-    /* Messages and results with no colored boxes */
+    /* Alert and Message Boxes */
     div[data-testid="stAlert"] {
-        background-color: transparent !important;
-        color: #111111 !important;
-        border: none !important;
+        background-color: #3C3C3C !important;
+        color: #F5F5F5 !important;
+        border-left: 5px solid #007BFF !important; /* Blue accent line */
+        border-radius: 5px;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
+
+# Example of how the styled elements will look
+st.title("Modern UI for Streamlit")
+st.write("This is an example of the new, improved styling for your application.")
+
+st.number_input("Enter a number:")
+st.text_input("Enter some text:")
+st.file_uploader("Upload a file to see the new style:")
+st.button("Submit")
+
+st.info("This is an informational message with the new custom styling.")
 
 
 # ---- TITLE ----
