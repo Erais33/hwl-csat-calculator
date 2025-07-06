@@ -1,186 +1,138 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-from datetime import datetime
-import re
+import numpy as np
 from collections import Counter
+import nltk
 
-# ---- STYLE ----
-st.markdown("""
-<style>
-html, body, .stApp {
-  background-color: #F5F7FA;
-  color: #002F4B;
-}
+# Download punkt for tokenizing (one time)
+nltk.download('punkt')
+from nltk.tokenize import word_tokenize
 
-.block-container {
-  background-color: #FFFFFF;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
+st.set_page_config(
+    page_title="Hostelworld CSAT Rolling Average",
+    layout="wide"
+)
 
-h1, h2, h3, h4, h5, h6, p, div {
-  color: #002F4B;
-}
+st.title("🏨 Hostelworld 6-Month Rolling CSAT Calculator")
 
-input, .stDateInput input, .stNumberInput>div>div>input {
-  background-color: #FFFFFF !important;
-  color: #002F4B !important;
-  border: 1px solid #002F4B !important;
-}
-
-.stButton>button {
-  background-color: #F58220 !important;
-  color: #FFFFFF !important;
-  border: none;
-  border-radius: 5px;
-  padding: 0.5em 1.2em;
-}
-
-div[data-testid="stAlert-success"] {
-  background-color: #DFF4EA !important;  /* Soft green */
-  color: #002F4B !important;
-}
-
-div[data-testid="stAlert-success"] p {
-  color: #002F4B !important;
-}
-
-div[data-testid="stAlert-info"] {
-  background-color: #E6F1F8 !important;  /* Soft blue */
-  color: #002F4B !important;
-}
-
-div[data-testid="stAlert-info"] p {
-  color: #002F4B !important;
-}
-
-div[data-testid="stAlert-warning"] {
-  background-color: #FFF4E5 !important;  /* Soft yellow */
-  color: #002F4B !important;
-}
-
-div[data-testid="stAlert-warning"] p {
-  color: #002F4B !important;
-}
-
-</style>
-""", unsafe_allow_html=True)
-
-
-# ---- LOGO ----
-try:
-    st.image("logohwl.png", width=200)
-except:
-    st.image("https://seeklogo.com/images/H/hostelworld-logo-57FDE8F7B1-seeklogo.com.png", width=200)
-
-st.title("St Christopher's CSAT Insights Dashboard")
-
-# ---- UPLOAD ----
-st.header("📤 Upload Reviews CSV")
-st.markdown("""
-Upload a CSV with these columns: **Date**, **Ratings**, **Value For Money**, **Security**, **Location**, **Staff**, **Atmosphere**, **Cleanliness**, **Facilities**, **Comment**.
+st.write("""
+Upload your last 6 months reviews CSV. 
+We'll calculate your current rolling average, show how it drops if you do nothing, 
+and help you see what you need to reach your Month +1 target!
 """)
 
-uploaded_file = st.file_uploader("Upload your CSV file", type=["csv"])
+# File uploader
+uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
 
 if uploaded_file:
-    # ---- SAFE LOAD ----
-    df = pd.read_csv(
-        uploaded_file,
-        quotechar='"',
-        on_bad_lines='skip',
-        parse_dates=['Date'],
-        dayfirst=True
-    )
-    st.success(f"✅ Loaded {len(df)} rows.")
+    df = pd.read_csv(uploaded_file)
 
-    # ---- ROLLING WINDOW ----
-    default_date = datetime.today().date()
-    cutoff_date = st.date_input("📅 Forecast for date:", default_date)
-    six_months_ago = pd.to_datetime(cutoff_date) - pd.DateOffset(months=6)
-    twelve_months_ago = pd.to_datetime(cutoff_date) - pd.DateOffset(months=12)
-
-    rolling_df = df[(df['Date'] > six_months_ago) & (df['Date'] <= pd.to_datetime(cutoff_date))]
-    rolling_reviews = len(rolling_df)
-    current_avg = rolling_df['Ratings'].mean()
-
-    st.subheader(f"📊 Current Rolling (Last 6 months)")
-    st.write(f"Rolling reviews: {rolling_reviews} | Average: {current_avg:.2f} / 10.00")
-
-    # ---- SUB-CATEGORIES ----
-    subs = ['Value For Money', 'Security', 'Location', 'Staff', 'Atmosphere', 'Cleanliness', 'Facilities']
-    st.subheader("🔍 Sub-Category Averages")
-
-    sub_scores = {}
-    for col in subs:
-        avg = rolling_df[col].mean()
-        sub_scores[col] = avg
-        st.write(f"**{col}:** {avg:.2f} / 10.00")
-
-    lowest_sub = min(sub_scores, key=sub_scores.get)
-    st.info(f"💡 Focus tip: *{lowest_sub}* is your lowest sub-score at {sub_scores[lowest_sub]:.2f}. Focus here for best impact!")
-
-    # ---- TREND CHART ----
-    st.subheader("📈 Monthly CSAT Trend (Last 12 months)")
-    trend_df = df[df['Date'] >= twelve_months_ago].copy()
-    trend_df['Month'] = trend_df['Date'].dt.to_period('M')
-    monthly_avg = trend_df.groupby('Month')['Ratings'].mean().reset_index()
-    monthly_avg['Month'] = monthly_avg['Month'].dt.to_timestamp()
-
-    fig, ax = plt.subplots()
-    ax.plot(monthly_avg['Month'], monthly_avg['Ratings'], marker='o', color="#F58220")
-    ax.set_title("Monthly Rolling CSAT")
-    ax.set_ylabel("Average Rating")
-    ax.set_ylim(0, 10)
-    st.pyplot(fig)
-
-    # ---- COMMENTS INSIGHTS ----
-    st.subheader("📝 Comments Summary")
-    all_comments = ' '.join(rolling_df['Comment'].dropna().astype(str)).lower()
-    all_comments = re.sub(r'[^\w\s]', '', all_comments)  # remove punctuation
-    words = all_comments.split()
-    words = [w for w in words if len(w) > 2]  # drop tiny words
-
-    word_counts = Counter(words)
-    most_common = word_counts.most_common(10)
-
-    st.write("**Most common words:**")
-    st.write(', '.join([w for w, _ in most_common]))
-
-    # ---- FORECAST ----
-    st.header("🔮 CSAT Forecast")
-
-    dropped_df = df[df['Date'] <= six_months_ago]
-    dropped_reviews = len(dropped_df)
-    drop_avg = dropped_df['Ratings'].mean() if dropped_reviews > 0 else 0.0
-
-    base_reviews = rolling_reviews - dropped_reviews
-    current_total = current_avg * rolling_reviews
-    drop_total = drop_avg * dropped_reviews
-
-    rolling_after_drop = current_total - drop_total
-    base_reviews_remaining = max(base_reviews, 0)
-    new_avg_if_none = (rolling_after_drop / base_reviews_remaining) if base_reviews_remaining > 0 else 0.0
-
-    st.success(f"📉 If you add no new reviews, your rolling average would drop to: {new_avg_if_none:.2f} / 10.00")
-
-    target_avg = st.number_input("🎯 Target rolling average:", value=9.0, min_value=0.0, max_value=10.0, step=0.1, format="%.2f")
-    expected_new_avg = st.number_input("✅ Realistic average for new reviews:", value=9.2, min_value=0.1, max_value=10.0, step=0.1, format="%.2f")
-
-    needed_points = target_avg * (base_reviews_remaining + 1) - rolling_after_drop
-
-    if expected_new_avg > target_avg:
-        new_reviews_needed = needed_points / (expected_new_avg - target_avg)
-        new_reviews_needed = max(0, new_reviews_needed)
-        total_score_needed = new_reviews_needed * expected_new_avg
-
-        st.info(f"⭐️ To reach {target_avg:.2f}, you’d need about {new_reviews_needed:.0f} new reviews averaging {expected_new_avg:.2f} / 10.00 (total points needed: {total_score_needed:.0f}).")
+    # Assure Dates are parsed
+    if 'Date' in df.columns:
+        df['Date'] = pd.to_datetime(df['Date'], dayfirst=True, errors='coerce')
     else:
-        st.info("⚠️ Your expected average must be higher than your target to calculate realistically.")
+        st.error("❌ Could not find a 'Date' column.")
+    
+    if 'Ratings' in df.columns:
+        valid_ratings = df['Ratings'].dropna().astype(float)
+        calculated_avg = valid_ratings.mean()
+        calculated_count = len(valid_ratings)
+        st.success(f"✅ Found {calculated_count} reviews with an average score of {calculated_avg:.2f}")
 
-    st.markdown("<br><br><sub>Made by Erwan Decotte</sub>", unsafe_allow_html=True)
+        # Current metrics inputs
+        st.header("📊 Current Metrics")
 
+        col1, col2 = st.columns(2)
+        with col1:
+            current_avg = st.number_input("Current 6-month rolling average", 0.0, 10.0, value=calculated_avg, step=0.01)
+            current_reviews = st.number_input("Current number of reviews", 0, 10000, value=calculated_count, step=1)
+        with col2:
+            target_avg = st.number_input("🎯 Target rolling average for Month +1", 0.0, 10.0, value=8.1, step=0.01)
+        
+        st.markdown("""
+        **What does this mean?**  
+        The *target rolling average* is what you want your **new 6-month average** to be **AFTER next month**, once older reviews roll off and new ones come in.
+        """)
+
+        st.header("🔄 Rolling Changes")
+
+        col1, col2 = st.columns(2)
+        with col1:
+            reviews_dropping = st.number_input("Reviews dropping next month", 0, current_reviews, value=5, step=1)
+            dropped_avg = st.number_input("Average of dropped reviews", 0.0, 10.0, value=current_avg, step=0.01)
+        
+        # Drop-off calculation
+        total_score_now = current_avg * current_reviews
+        score_dropping = dropped_avg * reviews_dropping
+        adjusted_total = total_score_now - score_dropping
+        new_review_base = current_reviews - reviews_dropping
+
+        if new_review_base > 0:
+            if_no_new_reviews = adjusted_total / new_review_base
+            st.info(f"If you add no new reviews, your rolling average will drop to: **{if_no_new_reviews:.2f}**")
+        else:
+            st.warning("No base reviews remaining. Check your numbers!")
+
+        # Needed new reviews calculation (find possible counts that make sense)
+        needed_reviews = None
+        needed_avg = None
+
+        for new_reviews in range(1, 300):
+            new_total_reviews = new_review_base + new_reviews
+            target_total_score = target_avg * new_total_reviews
+            required_new_score = target_total_score - adjusted_total
+            avg_for_new_reviews = required_new_score / new_reviews
+
+            if 0 <= avg_for_new_reviews <= 10:
+                needed_reviews = new_reviews
+                needed_avg = avg_for_new_reviews
+                break
+
+        if needed_reviews:
+            st.success(f"⭐️ To reach your Month +1 target of **{target_avg:.2f}**, "
+                       f"you’d need **{needed_reviews} new reviews** averaging "
+                       f"**{needed_avg:.2f} / 10.00**.")
+        else:
+            st.warning("🚫 With your inputs, reaching the target isn't feasible. Try adjusting your target or dropping average.")
+
+        st.divider()
+
+        # Subcategory averages
+        st.header("📊 Sub-category Averages")
+        sub_cats = ['Value For Money', 'Security', 'Location', 'Staff', 'Atmosphere', 'Cleanliness', 'Facilities']
+        sub_summaries = []
+        for cat in sub_cats:
+            if cat in df.columns:
+                avg = df[cat].dropna().astype(float).mean()
+                st.write(f"**{cat}: {avg:.2f}**")
+                sub_summaries.append((cat, avg))
+
+        lowest_sub = min(sub_summaries, key=lambda x: x[1]) if sub_summaries else None
+        if lowest_sub:
+            st.info(f"📌 Tip: Your lowest sub-score is **{lowest_sub[0]}: {lowest_sub[1]:.2f}**. Focus here for best improvement!")
+
+        st.divider()
+
+        # Comments summary
+        st.header("📝 Comments Summary")
+        if 'Comment' in df.columns:
+            all_comments = " ".join(str(c) for c in df['Comment'].dropna() if isinstance(c, str))
+            words = word_tokenize(all_comments.lower())
+            stop_words = set(nltk.corpus.stopwords.words('english'))
+            words_filtered = [w for w in words if w.isalpha() and w not in stop_words]
+            word_freq = Counter(words_filtered)
+            most_common = word_freq.most_common(10)
+            good_trends = [w for w, freq in most_common if freq > 3]
+
+            st.write("**Main trends in comments:**")
+            st.write(", ".join(good_trends) if good_trends else "Not enough data for trends.")
+        else:
+            st.info("No 'Comment' column found to analyze trends.")
+
+        st.markdown("----")
+        st.markdown("✅ *Made by Erwan Decotte*")
+
+    else:
+        st.error("❌ Could not find a 'Ratings' column.")
 else:
-    st.info("📂 Upload your CSV to get your full CSAT insights forecast.")
+    st.info("📤 Upload your CSV file to begin.")
