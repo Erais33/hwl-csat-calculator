@@ -5,13 +5,13 @@ from datetime import datetime
 # ---- PAGE CONFIG ----
 st.set_page_config(page_title="Rolling Average Forecast", layout="centered")
 
-# ---- SIMPLE ORANGE BACKGROUND ----
+# ---- ORANGE BACKGROUND ----
 st.markdown(
     """
     <style>
-    body {
-        background-color: #FFA726;
-        color: #000000;
+    .stApp {
+        background-color: #FFA726; /* Dark-ish orange */
+        color: black;
     }
     </style>
     """,
@@ -80,15 +80,15 @@ if uploaded_file:
         # ---- TARGET INPUT ----
         st.header("🎯 Forecast Inputs")
 
-        st.write("Target rolling average: The 6-month average you want to reach next month.")
+        st.write("**Target rolling average**: The 6-month average score you want to reach.")
         target_avg = st.number_input(
-            "Target rolling average:",
+            "🎯 Target rolling average:",
             value=9.0, min_value=0.0, max_value=10.0, step=0.1, format="%.2f"
         )
 
-        st.write("Expected average for new reviews: What you realistically expect new reviews to score.")
+        st.write("**Expected average for new reviews**: What you realistically expect new reviews to score.")
         expected_new_avg = st.number_input(
-            "Expected average for new reviews:",
+            "✍️ Expected average for new reviews:",
             value=9.2, min_value=0.1, max_value=10.0, step=0.1, format="%.2f"
         )
 
@@ -115,20 +115,20 @@ if uploaded_file:
 
         # ---- FORECAST RESULTS ----
         st.header("📈 Forecast")
-        st.write(f"If you add no new reviews, your rolling average would drop to: {new_avg_if_none:.2f} / 10.00")
+        st.write(f"📉 If you add no new reviews, your rolling average would drop to: {new_avg_if_none:.2f} / 10.00")
         if new_reviews_needed > 0:
             st.write(
-                f"To reach {target_avg:.2f}, you’d need about {new_reviews_needed:.0f} new reviews "
+                f"⭐️ To reach {target_avg:.2f}, you’d need about {new_reviews_needed:.0f} new reviews "
                 f"averaging {expected_new_avg:.2f} / 10.00."
             )
         else:
-            st.write("Your expected average must be higher than your target for this forecast to be realistic.")
+            st.write("⚠️ Your expected average must be higher than your target for this forecast to be realistic.")
 
     except Exception as e:
         st.write(f"❌ Error reading your CSV: {e}")
 
 else:
-    st.write("Upload your CSV to begin your forecast.")
+    st.write("📂 Upload your CSV to begin your forecast.")
 
 st.markdown("---")
 st.write("Made by Erwan Decotte")
