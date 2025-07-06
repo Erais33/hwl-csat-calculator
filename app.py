@@ -76,6 +76,16 @@ if uploaded_file:
         st.header("📅 Forecast Date")
         cutoff_date = st.date_input("Select forecast date:", datetime.today())
         six_months_ago = pd.to_datetime(cutoff_date) - pd.DateOffset(months=6)
+        
+        st.markdown(
+    """
+    📅 **What does this mean?**  
+    The forecast date is the day you want to look ahead to.  
+    Any reviews older than 6 months from this date will drop out of your rolling average.  
+    Use it to see what will happen if you get no new reviews, or plan how many you’ll need to reach your goal.
+    """
+)
+
 
         current_df = valid_df[
             (valid_df["Date"] > six_months_ago) & (valid_df["Date"] <= pd.to_datetime(cutoff_date))
