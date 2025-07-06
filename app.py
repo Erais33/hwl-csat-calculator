@@ -10,33 +10,59 @@ st.markdown(
     """
     <style>
     html, body, .stApp {
-        background-color: #FFE5B4;  /* Soft light orange */
-        color: #000000;             /* Black text */
+        background-color: #FFE5B4;  /* Light orange background */
+        color: #111111;             /* Dark text for good contrast */
+        font-family: Arial, sans-serif;
     }
 
     .block-container {
-        background-color: #FFE5B4;
+        background-color: #FFE5B4;  /* Orange main container */
         padding: 2rem;
-        border-radius: 8px;
     }
 
     h1, h2, h3, h4, h5, h6, p, div, span, label {
-        color: #000000 !important;  /* Force text to black */
+        color: #111111 !important;  /* Ensure text is dark for readability */
     }
 
     input, .stDateInput input {
         background-color: #FFFFFF !important;
-        color: #000000 !important;
+        color: #111111 !important;
+        border: 1px solid #444444 !important;
     }
 
     .stNumberInput > div > div > input {
         background-color: #FFFFFF !important;
-        color: #000000 !important;
+        color: #111111 !important;
+    }
+
+    /* Uploader text white for dark uploader box */
+    .stFileUploader {
+        color: #FFFFFF !important;
+    }
+    .stFileUploader label {
+        color: #FFFFFF !important;
+    }
+    .stFileUploader div {
+        color: #FFFFFF !important;
+    }
+
+    /* Buttons */
+    .stButton > button {
+        background-color: #FF7F50 !important;  /* Coral button */
+        color: #FFFFFF !important;             /* White text on buttons */
+    }
+
+    /* Messages and results with no colored boxes */
+    div[data-testid="stAlert"] {
+        background-color: transparent !important;
+        color: #111111 !important;
+        border: none !important;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
+
 
 # ---- TITLE ----
 st.title("📊 Rolling Average Forecast")
