@@ -5,65 +5,110 @@ from datetime import datetime
 # ---- PAGE CONFIG ----
 st.set_page_config(page_title="Rolling Average Forecast", layout="centered")
 
-# ---- MODERN UI STYLING ----
+# ---- HIGH-CONTRAST STYLING ----
 st.markdown(
     """
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700&display=swap');
 
     html, body, .stApp {
-        background-color: #F0F2F6;  /* Clean, light grey background */
-        color: #1E1E1E;             /* Dark text for readability */
-        font-family: 'Inter', sans-serif;
+        background-color: #0D1117;  /* Deep navy background */
+        color: #FFFFFF;             /* White text */
+        font-family: 'Lexend', sans-serif;
     }
 
-    .st-emotion-cache-10trblm { /* Main title */
-        color: #0068C9; /* Vibrant blue */
-        font-weight: 700;
+    /* Main title */
+    .st-emotion-cache-10trblm {
+        color: #39D3BB; /* Bright aqua accent */
         text-align: center;
+        font-weight: 700;
     }
 
-    h2 { /* Headers */
-        color: #0068C9; /* Vibrant blue */
+    /* Headers */
+    h2 {
+        color: #39D3BB; /* Bright aqua accent */
         font-weight: 600;
-        border-bottom: 2px solid #D1D9E4;
-        padding-bottom: 8px;
+        border-bottom: 2px solid #21262D;
+        padding-bottom: 10px;
     }
     
-    .st-emotion-cache-z5fcl4 { /* Subheaders */
-        background-color: rgba(0, 104, 201, 0.1);
-        border-left: 5px solid #0068C9;
-        padding: 1rem;
-        border-radius: 8px;
+    /* Subheaders */
+    h3 {
+        color: #C9D1D9; /* Lighter grey for sub-titles */
     }
 
+    /* Buttons */
     .stButton > button {
-        background-color: #0068C9;
-        color: #FFFFFF;
+        background-color: #39D3BB;
+        color: #0D1117; /* Dark text on button for contrast */
         border-radius: 8px;
-        font-weight: 600;
-        padding: 10px 20px;
+        font-weight: 700;
+        padding: 12px 24px;
         border: none;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     .stButton > button:hover {
-        background-color: #0052A1;
+        background-color: #A6FFF2;
     }
 
+    /* Input Widgets */
     .stTextInput > div > div > input,
     .stDateInput > div > div > input,
     .stNumberInput > div > div > input {
-        background-color: #FFFFFF;
+        background-color: #161B22; /* Slightly lighter navy for inputs */
+        color: #FFFFFF;
         border-radius: 8px;
-        border: 1px solid #D1D9E4;
+        border: 1px solid #30363D;
+    }
+
+    /* Alert Boxes (Success, Warning, Info) */
+    div[data-testid="stSuccess"] {
+        background-color: rgba(57, 211, 187, 0.1);
+        border-left: 5px solid #39D3BB;
+        color: #39D3BB;
+    }
+    div[data-testid="stWarning"] {
+        background-color: rgba(255, 179, 6, 0.1);
+        border-left: 5px solid #FFB306;
+        color: #FFB306;
+    }
+     div[data-testid="stInfo"] {
+        background-color: rgba(67, 133, 245, 0.1);
+        border-left: 5px solid #4385F5;
+        color: #4385F5;
     }
     
-    div[data-testid="stMetric"], .st-emotion-cache-z5fcl4 {
-        background-color: #FFFFFF;
-        border: 1px solid #D1D9E4;
+    /* Standard Metric Cards */
+    div[data-testid="stMetric"] {
+        background-color: #161B22;
+        border: 1px solid #30363D;
         border-radius: 8px;
         padding: 1.5rem;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    
+    /* Custom Summary Cards (without arrows) */
+    .custom-summary-card {
+        background-color: #161B22;
+        border: 1px solid #30363D;
+        border-radius: 8px;
+        padding: 1.5rem;
+        text-align: left; /* Align text to the left */
+        height: 100%;
+    }
+    .custom-summary-label {
+        color: #C9D1D9;
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+    }
+    .custom-summary-value {
+        color: #FFFFFF;
+        font-size: 2.5rem;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+    .custom-summary-avg {
+        color: #C9D1D9;
+        font-size: 1rem;
+        margin-top: 0.25rem;
     }
     </style>
     """,
@@ -121,8 +166,24 @@ if uploaded_file:
 
         st.subheader("🔍 Current Reviews Summary")
         col1, col2 = st.columns(2)
-        col1.metric("Staying Reviews", f"{current_reviews_count}", f"Avg: {current_avg:.2f}")
-        col2.metric("Dropping Reviews", f"{len(dropping_reviews_df)}", f"Avg: {dropping_reviews_df['Ratings'].mean():.2f}")
+        with col1:
+            st.markdown(f"""
+            <div class="custom-summary-card">
+                <div class="custom-summary-label">Staying Reviews</div>
+                <div class="custom-summary-value">{current_reviews_count}</div>
+                <div class="custom-summary-avg">Avg: {current_avg:.2f}</div>
+            </div>
+            """, unsafe_allow_html=True)
+        with col2:
+            dropping_avg = dropping_reviews_df['Ratings'].mean() if not dropping_reviews_df.empty else 0.0
+            st.markdown(f"""
+            <div class="custom-summary-card">
+                <div class="custom-summary-label">Dropping Reviews</div>
+                <div class="custom-summary-value">{len(dropping_reviews_df)}</div>
+                <div class="custom-summary-avg">Avg: {dropping_avg:.2f}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
 
         # ---- SUBCATEGORY AVERAGES ----
         st.header("📊 Subcategory Averages")
