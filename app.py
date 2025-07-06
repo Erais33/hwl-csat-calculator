@@ -14,12 +14,16 @@ st.markdown(
     }
 
     .main-container {
-        background-color: #FFA726; /* Inner orange */
+        background-color: #FFA726; /* Orange container */
         color: black;
-        border-radius: 40px;
+        border-radius: 12px;
         padding: 3rem;
-        max-width: 800px;
+        max-width: 900px;
         margin: auto;
+    }
+
+    html, body, p, div, h1, h2, h3, h4, h5, h6, span {
+        color: black !important;
     }
 
     input, .stDateInput input, .stNumberInput>div>div>input {
@@ -70,7 +74,7 @@ if uploaded_file:
 
         # ---- DATE INPUT ----
         st.header("📅 Select forecast date")
-        st.write("Pick the date you want to forecast for. Reviews older than 6 months drop off on this date.")
+        st.write("This is the date you want to forecast for. Reviews older than 6 months drop off on this date.")
 
         default_date = datetime.today().date()
         cutoff_date = st.date_input("Select forecast date:", default_date)
@@ -102,13 +106,13 @@ if uploaded_file:
         # ---- TARGET INPUT ----
         st.header("🎯 Forecast Inputs")
 
-        st.write("**Target rolling average:** The 6-month average score you want to reach.")
+        st.write("**Target rolling average:** What you want your 6-month average rating to be.")
         target_avg = st.number_input(
             "🎯 Target rolling average:",
             value=9.0, min_value=0.0, max_value=10.0, step=0.1, format="%.2f"
         )
 
-        st.write("**Expected average for new reviews:** What you realistically expect new reviews to score.")
+        st.write("**Expected average for new reviews:** The realistic score you think new guests will give.")
         expected_new_avg = st.number_input(
             "✍️ Expected average for new reviews:",
             value=9.2, min_value=0.1, max_value=10.0, step=0.1, format="%.2f"
