@@ -30,6 +30,10 @@ st.markdown(
         color: #000000 !important;
     }
 
+    label, div[data-testid="stDateInputLabel"], div[data-testid="stNumberInputLabel"], .stFileUploader label {
+        color: #000000 !important;
+    }
+
     div[data-testid="stAlert-success"], 
     div[data-testid="stAlert-info"], 
     div[data-testid="stAlert-warning"] {
@@ -47,7 +51,10 @@ st.title("📊 St Christopher's Inns • Rolling Average Forecast")
 # ---- UPLOAD ----
 st.header("📤 Upload Reviews CSV")
 
-uploaded_file = st.file_uploader("Upload your Hostelworld CSV file", type=["csv"])
+uploaded_file = st.file_uploader(
+    "Upload your Hostelworld CSV file",  # ✅ This is the only label, keep it short
+    type=["csv"]
+)
 
 if uploaded_file:
     try:
