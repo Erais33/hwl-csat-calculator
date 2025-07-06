@@ -8,15 +8,66 @@ from collections import Counter
 # ---- STYLE ----
 st.markdown("""
 <style>
-html, body, .stApp { background-color: #F5F7FA; color: #002F4B; }
-.block-container { background-color: #FFFFFF; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-input, .stDateInput input { background-color: #FFFFFF !important; color: #002F4B !important; }
-.stNumberInput>div>div>input { background-color: #FFFFFF !important; color: #002F4B !important; }
-.stButton>button { background-color: #F58220 !important; color: #FFFFFF !important; }
-div[data-testid="stAlert-success"] { background-color: #E6F4EA !important; }
-div[data-testid="stAlert-info"] { background-color: #E7F2FA !important; }
+html, body, .stApp {
+  background-color: #F5F7FA;
+  color: #002F4B;
+}
+
+.block-container {
+  background-color: #FFFFFF;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+h1, h2, h3, h4, h5, h6, p, div {
+  color: #002F4B;
+}
+
+input, .stDateInput input, .stNumberInput>div>div>input {
+  background-color: #FFFFFF !important;
+  color: #002F4B !important;
+  border: 1px solid #002F4B !important;
+}
+
+.stButton>button {
+  background-color: #F58220 !important;
+  color: #FFFFFF !important;
+  border: none;
+  border-radius: 5px;
+  padding: 0.5em 1.2em;
+}
+
+div[data-testid="stAlert-success"] {
+  background-color: #DFF4EA !important;  /* Soft green */
+  color: #002F4B !important;
+}
+
+div[data-testid="stAlert-success"] p {
+  color: #002F4B !important;
+}
+
+div[data-testid="stAlert-info"] {
+  background-color: #E6F1F8 !important;  /* Soft blue */
+  color: #002F4B !important;
+}
+
+div[data-testid="stAlert-info"] p {
+  color: #002F4B !important;
+}
+
+div[data-testid="stAlert-warning"] {
+  background-color: #FFF4E5 !important;  /* Soft yellow */
+  color: #002F4B !important;
+}
+
+div[data-testid="stAlert-warning"] p {
+  color: #002F4B !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
+
 
 # ---- LOGO ----
 try:
